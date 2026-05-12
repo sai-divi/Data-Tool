@@ -321,6 +321,28 @@ button:focus-visible {
   gap: 8px;
 }
 
+.flag.info {
+  border-left: 3px solid #000;
+  background: #f0f0f0;
+  font-weight: 700;
+}
+
+.verified-tag {
+  background: #000 !important;
+  color: #fff !important;
+  border-color: #000 !important;
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+}
+
+.unverified-tag {
+  background: #fff !important;
+  color: #999 !important;
+  border-color: #ccc !important;
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+}
+
 .finding-header {
   display: flex;
   justify-content: space-between;

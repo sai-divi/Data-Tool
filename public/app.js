@@ -32,7 +32,7 @@ const platformProfiles = {
   reddit: {
     label: "Reddit",
     direct: (h) => `https://www.reddit.com/user/${encodeURIComponent(h)}/`,
-    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:reddit.com/user "${h}"`)}`
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:reddit.com "${h}"`)}`
   },
   github: {
     label: "GitHub",
@@ -123,6 +123,135 @@ const platformProfiles = {
     label: "Telegram Channel",
     direct: (h) => `https://t.me/s/${encodeURIComponent(h)}`,
     search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`t.me/${h}`)}`
+  },
+  mastodon: {
+    label: "Mastodon",
+    direct: (h) => {
+      const parts = h.split("@");
+      if (parts.length === 2 && parts[1].includes(".")) return `https://${parts[1]}/@${parts[0]}`;
+      return null;
+    },
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:mastodon.social "@${h}" OR site:mastodon.world "@${h}"`)}`
+  },
+  spotify: {
+    label: "Spotify",
+    direct: (h) => `https://open.spotify.com/user/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:open.spotify.com/user "${h}"`)}`
+  },
+  vk: {
+    label: "VK",
+    direct: (h) => `https://vk.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:vk.com "${h}"`)}`
+  },
+  weibo: {
+    label: "Weibo",
+    direct: (h) => `https://weibo.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:weibo.com "${h}"`)}`
+  },
+  substack: {
+    label: "Substack",
+    direct: (h) => `https://${encodeURIComponent(h)}.substack.com`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:substack.com "${h}"`)}`
+  },
+  cashapp: {
+    label: "Cash App",
+    direct: (h) => `https://cash.app/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`cash.app "${h}" OR "cashapp" "${h}"`)}`
+  },
+  venmo: {
+    label: "Venmo",
+    direct: (h) => `https://venmo.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:venmo.com "${h}"`)}`
+  },
+  paypal: {
+    label: "PayPal",
+    direct: (h) => `https://www.paypal.com/paypalme/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:paypal.com/paypalme "${h}"`)}`
+  },
+  ebay: {
+    label: "eBay",
+    direct: (h) => `https://www.ebay.com/usr/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:ebay.com "${h}"`)}`
+  },
+  etsy: {
+    label: "Etsy",
+    direct: (h) => `https://www.etsy.com/shop/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:etsy.com "${h}"`)}`
+  },
+  fiverr: {
+    label: "Fiverr",
+    direct: (h) => `https://www.fiverr.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:fiverr.com "${h}"`)}`
+  },
+  upwork: {
+    label: "Upwork",
+    direct: (h) => `https://www.upwork.com/freelancers/~${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:upwork.com "${h}"`)}`
+  },
+  wordpress: {
+    label: "WordPress",
+    direct: (h) => `https://${encodeURIComponent(h)}.wordpress.com`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:wordpress.com "${h}"`)}`
+  },
+  blogspot: {
+    label: "Blogger",
+    direct: (h) => `https://${encodeURIComponent(h)}.blogspot.com`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:blogspot.com "${h}"`)}`
+  },
+  deviantart: {
+    label: "DeviantArt",
+    direct: (h) => `https://www.deviantart.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:deviantart.com "${h}"`)}`
+  },
+  artstation: {
+    label: "ArtStation",
+    direct: (h) => `https://www.artstation.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:artstation.com "${h}"`)}`
+  },
+  strava: {
+    label: "Strava",
+    direct: (h) => `https://www.strava.com/athletes/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:strava.com "${h}"`)}`
+  },
+  aboutme: {
+    label: "about.me",
+    direct: (h) => `https://about.me/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:about.me "${h}"`)}`
+  },
+  keybase: {
+    label: "Keybase",
+    direct: (h) => `https://keybase.io/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:keybase.io "${h}"`)}`
+  },
+  hackernews: {
+    label: "Hacker News",
+    direct: (h) => `https://news.ycombinator.com/user?id=${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:news.ycombinator.com "${h}"`)}`
+  },
+  producthunt: {
+    label: "Product Hunt",
+    direct: (h) => `https://www.producthunt.com/@${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:producthunt.com "${h}"`)}`
+  },
+  angellist: {
+    label: "AngelList",
+    direct: (h) => `https://angel.co/u/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:angel.co "${h}"`)}`
+  },
+  steam: {
+    label: "Steam",
+    direct: (h) => `https://steamcommunity.com/id/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:steamcommunity.com "${h}"`)}`
+  },
+  matrix: {
+    label: "Matrix",
+    direct: () => null,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`matrix "${h}"`)}`
+  },
+  slack: {
+    label: "Slack",
+    direct: () => null,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`slack "${h}"`)}`
   }
 };
 
@@ -232,9 +361,9 @@ function setMode(mode) {
   elements.osintPanel.classList.toggle("hidden", mode !== "osint");
   elements.transcriptPanel.classList.toggle("hidden", mode !== "transcript");
   elements.runButton.lastChild.textContent = " Run";
-  if (mode === "web") setStatus("Ready to grab public web pages.");
-  else if (mode === "transcript") setStatus("Ready. Paste a YouTube video URL.");
-  else setStatus("Ready for OSINT collection.");
+  if (mode === "web") setStatus("Paste website links above and click Run.");
+  else if (mode === "transcript") setStatus("Paste a YouTube link above and click Run.");
+  else setStatus("Paste names or links above and click Run.");
 }
 
 async function updateConnectionStatus(force = false) {
@@ -271,7 +400,7 @@ function createEmptyResult() {
     findings: [],
     sources: [],
     flags: [],
-    summary: "Run a collection to generate a concise public-source brief.",
+    summary: "Paste something above and click Run to start.",
     rawText: "",
     youtubeMetadata: [],
     onlineMetadata: [],
@@ -297,7 +426,7 @@ async function runCurrentMode() {
 async function runWebGrab() {
   const rawText = elements.webInput.value.trim();
   if (!rawText) {
-    setStatus("Add at least one public URL.", "warn");
+    setStatus("Add at least one website link.", "warn");
     return;
   }
 
@@ -321,23 +450,23 @@ async function runWebGrab() {
           checked: true
         });
       });
-    addFlag(result, "warn", "No URLs were found. Search leads were created instead.");
+    addFlag(result, "warn", "No links found. Search results created instead.");
     addBaselineFlags(result);
     result.summary = buildSummary(result);
     result.report = buildReport(result);
     state.lastResult = result;
     renderResult(result);
-    setStatus("Search leads created. Add URLs to grab page content.", "warn");
+    setStatus("Created search results. Add website links to get page content.", "warn");
     return;
   }
 
   const canCollectOnline = await ensureOnlineConnection();
   if (!canCollectOnline) {
-    setStatus("Internet is required for web grabbing.", "warn");
+    setStatus("Need internet to get pages.", "warn");
     return;
   }
 
-  setStatus("Grabbing public web pages...");
+  setStatus("Getting website content...");
 
   try {
     const response = await fetch("/api/grab", {
@@ -362,9 +491,9 @@ async function runWebGrab() {
     state.lastResult = result;
     renderResult(result);
 
-    setStatus(`Web grab complete: ${grabbedPages.length} page${grabbedPages.length === 1 ? "" : "s"} grabbed.`);
+    setStatus(`Got ${grabbedPages.length} page${grabbedPages.length === 1 ? "" : "s"}.`);
   } catch {
-    setStatus("Web grab failed.", "warn");
+    setStatus("Failed to get pages.", "warn");
   }
 }
 
@@ -425,17 +554,17 @@ function addWebPageFinding(result, page) {
 async function runYouTubeTranscript() {
   const url = elements.transcriptInput.value.trim();
   if (!url) {
-    setStatus("Paste a YouTube video URL first.", "warn");
+    setStatus("Paste a YouTube link first.", "warn");
     return;
   }
 
   const canCollectOnline = await ensureOnlineConnection();
   if (!canCollectOnline) {
-    setStatus("Internet is required for transcript fetching.", "warn");
+    setStatus("Need internet to get transcript.", "warn");
     return;
   }
 
-  setStatus("Fetching YouTube transcript...");
+  setStatus("Getting transcript...");
   elements.runButton.disabled = true;
 
   try {
@@ -479,10 +608,10 @@ async function runYouTubeTranscript() {
           tags: ["youtube", "transcript", "flagged"]
         });
         data.flaggedSegments.forEach((seg) => {
-          const m = Math.floor(seg.start / 60);
-          const s = Math.floor(seg.start % 60);
-          const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
-          addFlag(result, "danger", `[${ts}] ${seg.reason}: "${seg.text.slice(0, 120)}"`);
+          const ts = fmtTime(seg.start);
+          const txt = seg.text || "";
+          const displayText = txt.length > 160 ? txt.slice(0, txt.lastIndexOf(" ", 160)) + "..." : txt;
+          addFlag(result, "danger", `[${ts}] ${seg.reason}: "${displayText}"`);
         });
       }
       addSource(result, {
@@ -503,10 +632,10 @@ async function runYouTubeTranscript() {
     renderResult(result);
 
     setStatus(data.ok
-      ? `Transcript grabbed: ${data.chunkCount} segments, ${data.wordCount} words.`
+      ? `Transcript done: ${data.chunkCount} parts, ${data.wordCount} words.`
       : `Transcript failed: ${data.error}`);
   } catch {
-    setStatus("Transcript fetch failed.", "warn");
+    setStatus("Transcript failed.", "warn");
   } finally {
     elements.runButton.disabled = false;
   }
@@ -515,11 +644,11 @@ async function runYouTubeTranscript() {
 async function runOsintCollection() {
   const rawText = elements.rawInput.value.trim();
   if (!rawText && !state.uploadedImage) {
-    setStatus("Add a handle, URL, note, or screenshot first.", "warn");
+    setStatus("Paste a name, link, or photo first.", "warn");
     return;
   }
 
-  setStatus("Parsing public-source leads...");
+  setStatus("Looking up info...");
   const result = analyzeInput(rawText, "auto");
   state.lastResult = result;
   renderResult(result);
@@ -528,10 +657,13 @@ async function runOsintCollection() {
   if (canCollectOnline) {
     await enrichYouTubeFindings(result);
     await enrichPublicSourceMetadata(result);
+    await verifyProfiles(result);
   }
 
   renderResult(result);
-  setStatus(`Collection complete: ${result.findings.length} findings and ${result.sources.length} source leads.`);
+  const verifiedCount = result.sources.filter((s) => s.verified).length;
+  const msg = `Done: ${result.findings.length} result${result.findings.length === 1 ? "" : "s"}, ${result.sources.length} link${result.sources.length === 1 ? "" : "s"}.`;
+  setStatus(verifiedCount ? `${msg} ${verifiedCount} account${verifiedCount > 1 ? "s" : ""} found.` : msg);
 }
 
 function analyzeInput(rawText, selectedType) {
@@ -546,6 +678,12 @@ function analyzeInput(rawText, selectedType) {
   const ips = extractIPs(rawText);
   const crypto = extractCryptoAddresses(rawText);
   const discordInvites = extractDiscordInvites(rawText);
+  const userAgents = extractUserAgents(rawText);
+  const macAddresses = extractMAC(rawText);
+  const coordinates = extractCoordinates(rawText);
+  const creditCards = extractCreditCards(rawText);
+  const ssns = extractSSN(rawText);
+  const postalCodes = extractPostalCodes(rawText);
 
   urls.forEach((url) => addUrlFinding(result, url));
   handles.forEach((handle) => addHandleFinding(result, handle, selectedType));
@@ -575,30 +713,46 @@ function analyzeInput(rawText, selectedType) {
       value: phoneMatches.join(", "),
       confidence: "medium",
       source: "Input text",
-      notes: `${phoneMatches.length} possible phone number(s). Handle with care.`,
+      notes: `${phoneMatches.length} possible phone number(s) found. Handle with care.`,
       tags: ["sensitive", "phone"]
     });
   }
 
   if (ips.length) {
+    const ipv4Count = ips.filter((ip) => ip.includes(".")).length;
+    const ipv6Count = ips.length - ipv4Count;
     addFinding(result, {
       type: "IP address",
       value: ips.join(", "),
       confidence: "medium",
       source: "Input text",
-      notes: "IP address detected. May indicate server origin or VPN.",
+      notes: `${ipv4Count} IPv4, ${ipv6Count} IPv6 address(es) detected. May indicate server origin or VPN.`,
       tags: ["network", "ip"]
     });
   }
 
-  const allCrypto = [...crypto.btc, ...crypto.eth, ...crypto.usdt];
+  // Crypto - count all types
+  const cryptoTypes = [];
+  if (crypto.btc.length) cryptoTypes.push(`${crypto.btc.length} BTC`);
+  if (crypto.eth.length) cryptoTypes.push(`${crypto.eth.length} ETH`);
+  if (crypto.usdt.length) cryptoTypes.push(`${crypto.usdt.length} USDT`);
+  if (crypto.ltc.length) cryptoTypes.push(`${crypto.ltc.length} LTC`);
+  if (crypto.xrp.length) cryptoTypes.push(`${crypto.xrp.length} XRP`);
+  if (crypto.bch.length) cryptoTypes.push(`${crypto.bch.length} BCH`);
+  if (crypto.xmr.length) cryptoTypes.push(`${crypto.xmr.length} XMR`);
+  if (crypto.ada.length) cryptoTypes.push(`${crypto.ada.length} ADA`);
+  if (crypto.doge.length) cryptoTypes.push(`${crypto.doge.length} DOGE`);
+  if (crypto.sol.length) cryptoTypes.push(`${crypto.sol.length} SOL`);
+  if (crypto.ens.length) cryptoTypes.push(`${crypto.ens.length} ENS`);
+
+  const allCrypto = [...crypto.btc, ...crypto.eth, ...crypto.usdt, ...crypto.ltc, ...crypto.xrp, ...crypto.bch, ...crypto.xmr, ...crypto.ada, ...crypto.doge, ...crypto.sol, ...crypto.ens];
   if (allCrypto.length) {
     addFinding(result, {
       type: "Cryptocurrency address",
       value: allCrypto.join(", "),
       confidence: "medium",
       source: "Input text",
-      notes: `${crypto.btc.length} BTC, ${crypto.eth.length} ETH, ${crypto.usdt.length} USDT addresses found.`,
+      notes: cryptoTypes.join(", ") + " found. Financial leads — verify independently.",
       tags: ["crypto", "financial"]
     });
   }
@@ -609,8 +763,76 @@ function analyzeInput(rawText, selectedType) {
       value: discordInvites.join(", "),
       confidence: "high",
       source: "Input text",
-      notes: "Discord server invite link detected.",
+      notes: "Discord server invite link(s) detected.",
       tags: ["social", "discord"]
+    });
+  }
+
+  if (macAddresses.length) {
+    addFinding(result, {
+      type: "MAC address",
+      value: macAddresses.join(", "),
+      confidence: "high",
+      source: "Input text",
+      notes: "Network hardware identifier detected.",
+      tags: ["network", "mac"]
+    });
+  }
+
+  if (coordinates.length) {
+    addFinding(result, {
+      type: "GPS coordinate",
+      value: coordinates.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: "Geographic coordinates — may indicate location.",
+      tags: ["sensitive", "location"]
+    });
+  }
+
+  if (creditCards.length) {
+    addFinding(result, {
+      type: "Payment card",
+      value: creditCards.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: `${creditCards.length} possible payment card number(s). HIGHLY SENSITIVE — verify and redact immediately.`,
+      tags: ["sensitive", "financial", "pii"]
+    });
+    addFlag(result, "danger", "Payment card number(s) detected. HIGHLY SENSITIVE — redact and do not republish.");
+  }
+
+  if (ssns.length) {
+    addFinding(result, {
+      type: "SSN / Tax ID",
+      value: ssns.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: `${ssns.length} possible SSN(s) detected. HIGHLY SENSITIVE — verify and redact immediately.`,
+      tags: ["sensitive", "pii"]
+    });
+    addFlag(result, "danger", "Social Security / Tax ID number(s) detected. HIGHLY SENSITIVE — redact and do not republish.");
+  }
+
+  if (userAgents.length) {
+    addFinding(result, {
+      type: "User-agent string",
+      value: userAgents.join(", ").slice(0, 200),
+      confidence: "high",
+      source: "Input text",
+      notes: `${userAgents.length} user-agent string(s). Indicates browser/device fingerprint.`,
+      tags: ["technical", "fingerprint"]
+    });
+  }
+
+  if (postalCodes.length) {
+    addFinding(result, {
+      type: "Postal / ZIP code",
+      value: postalCodes.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: "Geographic area identifier(s).",
+      tags: ["location"]
     });
   }
 
@@ -746,6 +968,7 @@ function addCrossPlatformSources(result) {
       }
     });
 
+    // Google exact phrase search
     addSource(result, {
       title: "Exact phrase web search",
       url: `https://www.google.com/search?q=${encodeURIComponent(`"${handle}"`)}`,
@@ -754,10 +977,38 @@ function addCrossPlatformSources(result) {
       checked: false
     });
 
+    // Username aggregator: WhatsMyName
     addSource(result, {
       title: "Username search (WhatsMyName)",
       url: `https://whatsmyname.app/?q=${encodeURIComponent(handle)}`,
       kind: "Aggregator",
+      target: `@${handle}`,
+      checked: false
+    });
+
+    // Username aggregator: Namechk
+    addSource(result, {
+      title: "Username search (Namechk)",
+      url: `https://namechk.com/?q=${encodeURIComponent(handle)}`,
+      kind: "Aggregator",
+      target: `@${handle}`,
+      checked: false
+    });
+
+    // Sherlock-style GitHub username search
+    addSource(result, {
+      title: "Username GitHub search",
+      url: `https://github.com/search?q=${encodeURIComponent(handle)}+in%3Alogin&type=Users`,
+      kind: "Aggregator search",
+      target: `@${handle}`,
+      checked: false
+    });
+
+    // Social Searcher
+    addSource(result, {
+      title: "Social Searcher (cross-platform)",
+      url: `https://www.social-searcher.com/google-social-search/?q=${encodeURIComponent(handle)}`,
+      kind: "Aggregator search",
       target: `@${handle}`,
       checked: false
     });
@@ -773,7 +1024,7 @@ async function enrichYouTubeFindings(result) {
 
   if (!youtubeTargets.length) return;
 
-  setStatus("Checking public YouTube metadata...");
+  setStatus("Checking YouTube info...");
 
   for (const target of youtubeTargets.slice(0, 4)) {
     try {
@@ -816,7 +1067,7 @@ async function enrichPublicSourceMetadata(result) {
 
   for (let index = 0; index < metadataTargets.length; index += 1) {
     const target = metadataTargets[index];
-    setStatus(`Scraping public metadata ${index + 1}/${metadataTargets.length}...`);
+    setStatus(`Checking info ${index + 1}/${metadataTargets.length}...`);
 
     try {
       const response = await fetch(`/api/metadata?url=${encodeURIComponent(target)}`);
@@ -849,18 +1100,114 @@ async function enrichPublicSourceMetadata(result) {
   result.report = buildReport(result);
 }
 
+async function verifyProfiles(result) {
+  const profileUrls = unique(
+    result.sources
+      .filter((s) => s.kind === "Profile" || s.kind === "Direct" || s.kind === "Cross-platform")
+      .filter((s) => {
+        try {
+          const host = new URL(s.url).hostname;
+          return !host.includes("google.com") && !host.includes("whatsmyname") && !host.includes("namechk") && !host.includes("social-searcher") && !host.includes("github.com/search");
+        } catch { return false; }
+      })
+      .map((s) => s.url)
+  ).slice(0, 25);
+
+  if (!profileUrls.length) return;
+
+    setStatus(`Checking ${profileUrls.length} account${profileUrls.length === 1 ? "" : "s"}...`);
+
+  try {
+    const response = await fetch("/api/verify-profiles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ urls: profileUrls })
+    });
+    const data = await response.json();
+    if (!data.ok || !data.results) return;
+
+    const verifiedUrls = new Map();
+    data.results.forEach((r) => {
+      verifiedUrls.set(r.url, r.exists);
+      if (r.finalUrl && r.finalUrl !== r.url) verifiedUrls.set(r.finalUrl, r.exists);
+    });
+
+    let verifiedCount = 0;
+    let unverifiedCount = 0;
+
+    result.sources.forEach((source) => {
+      const exists = verifiedUrls.get(source.url);
+      if (exists === true) {
+        source.verified = true;
+        source.checked = true;
+        verifiedCount++;
+      } else if (exists === false) {
+        source.verified = false;
+        unverifiedCount++;
+      }
+    });
+
+    // Add verified account findings
+    data.results.forEach((r) => {
+      if (r.exists) {
+        try {
+          const host = new URL(r.url).hostname.replace(/^www\./, "");
+          addFinding(result, {
+            type: "Verified account",
+            value: r.url,
+            confidence: "high",
+            source: r.url,
+            notes: `Account confirmed existing on ${host} (HTTP ${r.status})`,
+            tags: ["verified", "confirmed"]
+          });
+        } catch {}
+      }
+    });
+
+    const totalChecked = data.results.filter((r) => r.checked).length;
+    if (verifiedCount > 0) {
+      addFlag(result, "info", `${verifiedCount} account${verifiedCount > 1 ? "s" : ""} found and confirmed.`);
+    }
+    if (unverifiedCount > 0) {
+      addFlag(result, "warn", `${unverifiedCount} account${unverifiedCount > 1 ? "s" : ""} not confirmed (may not exist or need login).`);
+    }
+
+    result.summary = buildSummary(result);
+    result.report = buildReport(result);
+  } catch {
+    // Silently skip if verification fails
+  }
+}
+
 function extractUrls(text) {
-  const matches = text.match(/\bhttps?:\/\/[^\s<>"'\]]+/gi) || [];
-  return unique(matches.map((url) => url.replace(/[),.;:]+$/, "").replace(/#.*$/, "")));
+  const patterns = [
+    /\bhttps?:\/\/[^\s<>"'\]]+/gi,
+    /\bhttps?:\/\/[^\s()<>"']+(?:\([^\s()<>"']*\)[^\s()<>"']*)*/gi
+  ];
+  const all = [];
+  patterns.forEach((p) => {
+    const m = text.match(p);
+    if (m) all.push(...m);
+  });
+  return unique(
+    all.map((url) =>
+      url
+        .replace(/[),.;:!?]+$/g, "")
+        .replace(/[([{]$/, "")
+        .replace(/#.*$/, "")
+        .replace(/\]$/, "")
+    )
+  );
 }
 
 function extractHandles(text) {
-  const explicitHandles = text.match(/(^|[^\w])@([\w.-]{2,30})/g) || [];
+  const explicitHandles = text.match(/(^|[^\w@])@([\w.-]{2,30})/g) || [];
   const fromUrls = extractUrls(text).map(extractHandleFromUrl).filter(Boolean);
-  return unique([
+  const all = [
     ...explicitHandles.map((match) => match.replace(/[^\w@.-]/g, "")),
     ...fromUrls
-  ]);
+  ];
+  return unique(all);
 }
 
 function extractHandleFromUrl(url) {
@@ -870,7 +1217,7 @@ function extractHandleFromUrl(url) {
     const parts = parsed.pathname.split("/").filter(Boolean);
     if (host.includes("youtube.com") || host === "youtu.be") return parts[0]?.startsWith("@") ? parts[0] : (parts[1] === "channel" && parts[2] ? parts[2] : parts[0]?.startsWith("@") ? parts[0] : "");
     if (host.includes("instagram.com")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
-    if (host.includes("tiktok.com")) return parts[0]?.startsWith("@") ? parts[0] : parts[0];
+    if (host.includes("tiktok.com")) return parts[0]?.startsWith("@") ? parts[0].replace("@","") : parts[0];
     if (host === "x.com" || host.includes("twitter.com")) return parts[0] || "";
     if (host.includes("reddit.com")) return parts[0] === "user" ? parts[1] : parts[0]?.startsWith("u/") ? parts[0].slice(2) : parts[0]?.startsWith("/u/") ? parts[0].slice(3) : "";
     if (host.includes("github.com") || host === "git.io") return parts[0] || "";
@@ -878,7 +1225,7 @@ function extractHandleFromUrl(url) {
     if (host.includes("facebook.com") || host === "fb.com") return parts[0] || "";
     if (host.includes("linkedin.com")) return parts[1] === "in" ? parts[2] : (parts[0] === "in" ? parts[1] : parts[0]);
     if (host.includes("snapchat.com")) return parts[0] === "add" ? parts[1] : parts[0];
-    if (host === "t.me" || host.includes("telegram.org") || host === "telegram.me") return parts[0] || "";
+    if (host === "t.me" || host.includes("telegram.org") || host === "telegram.me" || host === "telegram.dog") return parts[0] || "";
     if (host.includes("pinterest")) return parts[0] || "";
     if (host.includes("tumblr.com")) return parts[0] || host.replace(".tumblr.com", "");
     if (host.includes("medium.com")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
@@ -898,7 +1245,24 @@ function extractHandleFromUrl(url) {
     if (host.includes("producthunt.com")) return parts[0] === "profile" ? parts[1] : parts[0]?.startsWith("@") ? parts[0].slice(1) : "";
     if (host.includes("discord.com") || host.includes("discord.gg") || host.includes("discord.me")) return host.includes("invite") ? parts[1] : "";
     if (host.includes("steamcommunity.com")) return parts[0] === "id" ? parts[1] : (parts[1] === "profiles" ? parts[2] : "");
-    if (host.includes("telegram.dog")) return parts[0] || "";
+    if (host.includes("mastodon.social") || host.includes("mastodon.world") || host.includes("mastodon.")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
+    if (host.includes("vk.com")) return parts[0] || "";
+    if (host.includes("weibo.com")) return parts[0] || "";
+    if (host.includes("substack.com")) return host.replace(".substack.com", "") || parts[0];
+    if (host.includes("cash.app")) return parts[0] || "";
+    if (host.includes("venmo.com")) return parts[0] || "";
+    if (host.includes("paypal.com") && parts[0] === "paypalme") return parts[1] || "";
+    if (host.includes("ebay.com") && parts[0] === "usr") return parts[1] || "";
+    if (host.includes("etsy.com") && parts[0] === "shop") return parts[1] || "";
+    if (host.includes("fiverr.com")) return parts[0] || "";
+    if (host.includes("upwork.com")) return parts[0] === "freelancers" ? parts[1]?.replace(/^~/, "") : "";
+    if (host.includes("wordpress.com")) return host.replace(".wordpress.com", "") || "";
+    if (host.includes("blogspot.com")) return host.replace(".blogspot.com", "") || "";
+    if (host.includes("deviantart.com")) return parts[0] || "";
+    if (host.includes("artstation.com")) return parts[0] || "";
+    if (host.includes("strava.com") && parts[0] === "athletes") return parts[1] || "";
+    if (host.includes("news.ycombinator.com")) return "";
+    if (host.includes("spotify.com") && parts[0] === "user") return parts[1] || "";
   } catch { return ""; }
   return "";
 }
@@ -909,13 +1273,26 @@ function extractEmails(text) {
 
 function extractPossiblePhones(text) {
   const patterns = [
-    /(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/g,
-    /\+\d{1,3}[\s.-]?\d{6,14}(?:[\s.-]\d{1,5})?/g,
-    /(?:tel|phone|cell|mobile|call)[:\s]*\+?[\d\s().-]{7,15}/gi
+    // US/CA: +1 (555) 123-4567 or 555-123-4567
+    /(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}(?!\d)/g,
+    // International: +CC X... with country code 1-3 digits, then 6-14 digits
+    /\+\d{1,3}[\s.-]?\d{2,4}[\s.-]?\d{2,4}[\s.-]?\d{2,4}(?:[\s.-]\d{1,5})?/g,
+    // Label-prefixed: tel/phone/cell/mobile/call/whatsapp/viber + digits
+    /(?:tel|phone|cell|mobile|call|whatsapp|viber|telegram|line|skype|text|dial|reach|contact)[:\s]*\+?[\d\s().-]{7,18}/gi,
+    // UK-style: 07XXX XXXXXX
+    /\b07\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g,
+    // AU-style: 04XX XXX XXX
+    /\b04\d{1,2}[\s.-]?\d{3}[\s.-]?\d{3}\b/g,
+    // Generic: standalone groups of 10-15 digits with optional spacing
+    /(?<!\d)(?:\d[\s.-]?){9,14}(?!\d)/g
   ];
   const all = [];
   patterns.forEach((p) => { const m = text.match(p); if (m) all.push(...m); });
-  return unique(all);
+  const filtered = all.filter((v) => {
+    const digits = v.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15;
+  });
+  return unique(filtered);
 }
 
 function extractDates(text) {
@@ -933,15 +1310,54 @@ function extractDates(text) {
 }
 
 function extractIPs(text) {
+  // IPv4 with octet validation
   const ipv4 = text.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || [];
-  return unique(ipv4.filter((ip) => ip.split(".").every((o) => Number(o) >= 0 && Number(o) <= 255)));
+  const validv4 = ipv4.filter((ip) => ip.split(".").every((o) => Number(o) >= 0 && Number(o) <= 255));
+
+  // IPv6 (simplified - matches common formats)
+  const ipv6Pattern = /\b(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\b|\b(?:[a-fA-F0-9]{1,4}:){1,7}:|\b(?:[a-fA-F0-9]{1,4}:){1,6}:[a-fA-F0-9]{1,4}\b|\b::(?:[a-fA-F0-9]{1,4}:){1,6}[a-fA-F0-9]{1,4}\b|\b(?:[a-fA-F0-9]{1,4}:){1,5}(?::[a-fA-F0-9]{1,4}){1,2}\b|\b(?:[a-fA-F0-9]{1,4}:){1,4}(?::[a-fA-F0-9]{1,4}){1,3}\b|\b(?:[a-fA-F0-9]{1,4}:){1,3}(?::[a-fA-F0-9]{1,4}){1,4}\b|\b(?:[a-fA-F0-9]{1,4}:){1,2}(?::[a-fA-F0-9]{1,4}){1,5}\b|\b[a-fA-F0-9]{1,4}:(?::[a-fA-F0-9]{1,4}){1,6}\b/g;
+  const ipv6Matches = text.match(ipv6Pattern) || [];
+
+  return unique([...validv4, ...ipv6Matches]);
 }
 
 function extractCryptoAddresses(text) {
+  // Bitcoin - legacy (1), segwit (3), bech32 (bc1)
   const btc = text.match(/\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b/g) || [];
+  const bc1 = text.match(/\bbc1[a-zA-HJ-NP-Z0-9]{25,58}\b/g) || [];
+  // Ethereum (0x + 40 hex)
   const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
+  // Tether TRC20 (T + 33 base58)
   const usdt = text.match(/\bT[A-HJ-NP-Za-km-z1-9]{33}\b/g) || [];
-  return { btc: unique(btc), eth: unique(eth), usdt: unique(usdt) };
+  // Litecoin (L + 26-33 base58)
+  const ltc = text.match(/\b[LM][a-km-zA-HJ-NP-Z1-9]{26,33}\b/g) || [];
+  // XRP (r + 24-34 base58)
+  const xrp = text.match(/\br[a-zA-HJ-NP-Z0-9]{24,34}\b/g) || [];
+  // Bitcoin Cash (q or p prefix)
+  const bch = text.match(/\b[qp][a-zA-HJ-NP-Z0-9]{25,50}\b/g) || [];
+  // Monero (4 or 8 prefix, 95 chars)
+  const xmr = text.match(/\b[48][0-9a-zA-Z]{94}\b/g) || [];
+  // Cardano (starts with addr1)
+  const ada = text.match(/\baddr1[a-zA-HJ-NP-Z0-9]{40,60}\b/g) || [];
+  // Dogecoin (D prefix)
+  const doge = text.match(/\bD[a-km-zA-HJ-NP-Z1-9]{25,34}\b/g) || [];
+  // Solana (32-44 base58)
+  const sol = text.match(/\b[1-9A-HJ-NP-Za-km-z]{32,44}\b/g) || [];
+  // Blockchain ENS domains (algo.eth-style patterns)
+  const ens = text.match(/\b\w+\.eth\b/g) || [];
+  return {
+    btc: unique([...btc, ...bc1]),
+    eth: unique(eth),
+    usdt: unique(usdt),
+    ltc: unique(ltc),
+    xrp: unique(xrp),
+    bch: unique(bch),
+    xmr: unique(xmr),
+    ada: unique(ada),
+    doge: unique(doge),
+    sol: unique(sol.filter((s) => !/^(?:https?:\/\/)/i.test(s) && s.length >= 32)),
+    ens: unique(ens)
+  };
 }
 
 function extractDiscordInvites(text) {
@@ -952,6 +1368,59 @@ function extractDiscordInvites(text) {
 function extractUserAgents(text) {
   const ua = text.match(/[A-Za-z0-9]+\/[0-9]+\.[0-9]+(?:\.[0-9]+)?\s*\([^)]+\)\s*(?:[A-Za-z0-9/]+(?:\s+[A-Za-z0-9/]+)*)?/g) || [];
   return unique(ua);
+}
+
+function extractMAC(text) {
+  const macs = text.match(/\b(?:[a-fA-F0-9]{2}[:-]){5}[a-fA-F0-9]{2}\b/g) || [];
+  return unique(macs);
+}
+
+function extractCoordinates(text) {
+  const results = [];
+  // Decimal: 40.7128, -74.0060 or 40.7128° N, 74.0060° W
+  const decPattern = /(-?\d{1,2}\.\d{4,})\s*[,°]?\s*(?:N|S|North|South)?,?\s*(-?\d{1,3}\.\d{4,})\s*[,°]?\s*(?:E|W|East|West)?/gi;
+  let m;
+  while ((m = decPattern.exec(text)) !== null) {
+    const lat = parseFloat(m[1]);
+    const lon = parseFloat(m[2]);
+    if (Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+      results.push(`${m[1]}, ${m[2]}`);
+    }
+  }
+  // DMS: 40°42'46"N 74°00'21"W
+  const dmsPattern = /(\d{1,3})°\s*(\d{1,2})'[,\s]*(\d{1,2}(?:\.\d+)?)"?\s*([NSEWnsew])/g;
+  while ((m = dmsPattern.exec(text)) !== null) {
+    results.push(`${m[1]}°${m[2]}'${m[3]}"${m[4]}`);
+  }
+  return unique(results);
+}
+
+function extractCreditCards(text) {
+  const ccPatterns = [
+    /\b4\d{3}[\s.-]?\d{4}[\s.-]?\d{4}[\s.-]?\d{4}\b/g,         // Visa
+    /\b5[1-5]\d{2}[\s.-]?\d{4}[\s.-]?\d{4}[\s.-]?\d{4}\b/g,     // Mastercard
+    /\b3[47]\d{2}[\s.-]?\d{6}[\s.-]?\d{5}\b/g,                   // Amex
+    /\b6(?:011|5\d{2})\d{2}[\s.-]?\d{4}[\s.-]?\d{4}[\s.-]?\d{4}\b/g // Discover
+  ];
+  const all = [];
+  ccPatterns.forEach((p) => { const m = text.match(p); if (m) all.push(...m); });
+  return unique(all);
+}
+
+function extractSSN(text) {
+  const ssn = text.match(/\b(?!000|666|9\d{2})\d{3}[-]?(?!00)\d{2}[-]?(?!0000)\d{4}\b/g) || [];
+  return unique(ssn);
+}
+
+function extractPostalCodes(text) {
+  const results = [];
+  // US ZIP+4 or ZIP
+  const usZip = text.match(/\b\d{5}(?:-\d{4})?\b/g) || [];
+  // UK Postcodes
+  const ukPost = text.match(/\b[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}\b/g) || [];
+  // Canadian postal codes
+  const caPost = text.match(/\b[ABCEGHJKLMNPRSTVXY]\d[A-Z]\s?\d[A-Z]\d\b/gi) || [];
+  return unique([...usZip, ...ukPost, ...caPost]);
 }
 
 function inferSingleHandle(text) {
@@ -975,7 +1444,7 @@ function classifyUrl(url) {
     if (host.includes("youtube.com") || host === "youtu.be") return { key: "youtube", label: "YouTube" };
     if (host.includes("instagram.com")) return { key: "instagram", label: "Instagram" };
     if (host.includes("tiktok.com")) return { key: "tiktok", label: "TikTok" };
-    if (host === "x.com" || host.includes("twitter.com")) return { key: "x", label: "X" };
+    if (host === "x.com" || host.includes("twitter.com")) return { key: "x", label: "X/Twitter" };
     if (host.includes("reddit.com")) return { key: "reddit", label: "Reddit" };
     if (host.includes("github.com") || host === "git.io") return { key: "github", label: "GitHub" };
     if (host.includes("twitch.tv")) return { key: "twitch", label: "Twitch" };
@@ -1000,9 +1469,32 @@ function classifyUrl(url) {
     if (host.includes("vimeo.com")) return { key: "web", label: "Vimeo" };
     if (host.includes("codepen.io")) return { key: "web", label: "CodePen" };
     if (host.includes("keybase.io")) return { key: "web", label: "Keybase" };
-    if (host.includes("steamcommunity.com") || host.includes("steampowered.com")) return { key: "web", label: "Steam" };
-    if (host.includes("producthunt.com")) return { key: "web", label: "Product Hunt" };
-    if (host.includes("angel.co") || host.includes("angellist.com")) return { key: "web", label: "AngelList" };
+    if (host.includes("steamcommunity.com") || host.includes("steampowered.com")) return { key: "steam", label: "Steam" };
+    if (host.includes("producthunt.com")) return { key: "producthunt", label: "Product Hunt" };
+    if (host.includes("angel.co") || host.includes("angellist.com")) return { key: "angellist", label: "AngelList" };
+    if (host.includes("mastodon.social") || host.includes("mastodon.world") || host.includes("mastodon.")) return { key: "mastodon", label: "Mastodon" };
+    if (host.includes("vk.com")) return { key: "vk", label: "VK" };
+    if (host.includes("weibo.com")) return { key: "weibo", label: "Weibo" };
+    if (host.includes("substack.com")) return { key: "substack", label: "Substack" };
+    if (host.includes("cash.app")) return { key: "cashapp", label: "Cash App" };
+    if (host.includes("venmo.com")) return { key: "venmo", label: "Venmo" };
+    if (host.includes("paypal.com")) return { key: "paypal", label: "PayPal" };
+    if (host.includes("ebay.com") || host.includes("ebay.")) return { key: "ebay", label: "eBay" };
+    if (host.includes("etsy.com")) return { key: "etsy", label: "Etsy" };
+    if (host.includes("fiverr.com")) return { key: "fiverr", label: "Fiverr" };
+    if (host.includes("upwork.com")) return { key: "upwork", label: "Upwork" };
+    if (host.includes("wordpress.com")) return { key: "wordpress", label: "WordPress" };
+    if (host.includes("blogspot.com")) return { key: "blogspot", label: "Blogger" };
+    if (host.includes("deviantart.com")) return { key: "deviantart", label: "DeviantArt" };
+    if (host.includes("artstation.com")) return { key: "artstation", label: "ArtStation" };
+    if (host.includes("strava.com")) return { key: "strava", label: "Strava" };
+    if (host.includes("about.me")) return { key: "aboutme", label: "about.me" };
+    if (host.includes("news.ycombinator.com")) return { key: "hackernews", label: "Hacker News" };
+    if (host.includes("spotify.com")) return { key: "spotify", label: "Spotify" };
+    if (host.includes("hackerone.com")) return { key: "web", label: "HackerOne" };
+    if (host.includes("bugcrowd.com")) return { key: "web", label: "Bugcrowd" };
+    if (host.includes("tryhackme.com")) return { key: "web", label: "TryHackMe" };
+    if (host.includes("hackthebox") || host.includes("hackthebox.com")) return { key: "web", label: "HackTheBox" };
     return { key: "web", label: host };
   } catch {
     return { key: "web", label: "Web" };
@@ -1033,6 +1525,30 @@ function inferPlatformForHandle(value) {
   if (lower.includes("tumblr")) return "tumblr";
   if (lower.includes("threads")) return "threads";
   if (lower.includes("bluesky") || lower.includes("bsky")) return "bluesky";
+  if (lower.includes("mastodon") || lower.includes("fedi")) return "mastodon";
+  if (lower.includes("spotify")) return "spotify";
+  if (lower.includes("vk.com") || lower.includes("vkontakte")) return "vk";
+  if (lower.includes("weibo")) return "weibo";
+  if (lower.includes("substack")) return "substack";
+  if (lower.includes("cashapp") || lower.includes("cash.app") || lower.includes("$")) return "cashapp";
+  if (lower.includes("venmo")) return "venmo";
+  if (lower.includes("paypal")) return "paypal";
+  if (lower.includes("ebay")) return "ebay";
+  if (lower.includes("etsy")) return "etsy";
+  if (lower.includes("fiverr")) return "fiverr";
+  if (lower.includes("upwork")) return "upwork";
+  if (lower.includes("deviantart")) return "deviantart";
+  if (lower.includes("artstation")) return "artstation";
+  if (lower.includes("strava")) return "strava";
+  if (lower.includes("keybase")) return "keybase";
+  if (lower.includes("hackernews") || lower.includes("hn/") || lower.includes("ycombinator")) return "hackernews";
+  if (lower.includes("producthunt") || lower.includes("ph/")) return "producthunt";
+  if (lower.includes("angellist") || lower.includes("angel.co")) return "angellist";
+  if (lower.includes("steam")) return "steam";
+  if (lower.includes("matrix")) return "matrix";
+  if (lower.includes("slack")) return "slack";
+  if (lower.includes("wordpress") || lower.includes("wp/")) return "wordpress";
+  if (lower.includes("blogger") || lower.includes("blogspot")) return "blogspot";
   return "generic";
 }
 
@@ -1072,9 +1588,9 @@ function addFlag(result, severity, message) {
 }
 
 function addBaselineFlags(result) {
-  addFlag(result, "warn", "Verify every lead against the original public source before acting on it.");
+  addFlag(result, "warn", "Check each link to make sure the info is correct before using it.");
   if (result.findings.some((finding) => finding.tags.includes("sensitive"))) {
-    addFlag(result, "danger", "Sensitive personal data detected. Minimize, redact, and avoid republishing it.");
+    addFlag(result, "danger", "Sensitive personal info found. Be careful with it and do not share it publicly.");
   }
 }
 
@@ -1083,34 +1599,42 @@ function buildSummary(result) {
   const urls = result.findings.filter((finding) => finding.tags.includes("url"));
   const metadata = result.findings.filter((finding) => finding.tags.includes("metadata"));
   const webPages = result.webPages || [];
+  const sensitiveCount = result.findings.filter((f) => f.tags.includes("sensitive")).length;
+  const cryptoCount = result.findings.filter((f) => f.tags.includes("crypto")).length;
+  const networkCount = result.findings.filter((f) => f.tags.includes("network")).length;
+  const locationCount = result.findings.filter((f) => f.tags.includes("location")).length;
 
   if (result.transcriptResult?.ok) {
     const t = result.transcriptResult;
     const flags = t.flaggedSegments?.length || 0;
     const violation = t.violationAnalysis?.category;
-    const base = `YouTube transcript grabbed: "${t.title || "Untitled"}" by ${t.channel || "Unknown"} — ${t.chunkCount} segments, ${t.wordCount} words.`;
-    if (violation) return `${base} ⚠ VIOLATION: ${violation}. See transcript tab.`;
-    if (flags) return `${base} ⚠ ${flags} potentially harmful segment(s) flagged. See transcript tab.`;
-    return `${base} No harmful content detected.`;
+    const base = `YouTube transcript: "${t.title || "Untitled"}" by ${t.channel || "Unknown"} — ${t.chunkCount} parts, ${t.wordCount} words.`;
+    if (violation) return `${base} ⚠ ${violation}. See transcript tab.`;
+    if (flags) return `${base} ⚠ ${flags} issue${flags === 1 ? "" : "s"} found. See transcript tab.`;
+    return `${base} No issues found.`;
   }
 
   if (!result.findings.length && !result.sources.length) {
-    return "No public-source findings have been created yet.";
+    return "No results yet.";
   }
 
   if (!result.findings.length && result.sources.length) {
-    return `${result.sources.length} source lead${result.sources.length === 1 ? "" : "s"} created. Add public URLs to grab page content.`;
+    return `${result.sources.length} link${result.sources.length === 1 ? "" : "s"} created. Add website links to get page content.`;
   }
 
   const parts = [];
   if (webPages.length) parts.push(`${webPages.length} public web page${webPages.length === 1 ? "" : "s"} grabbed`);
-  if (handles.length) parts.push(`${handles.length} username or handle lead${handles.length === 1 ? "" : "s"} detected`);
-  if (urls.length) parts.push(`${urls.length} direct URL${urls.length === 1 ? "" : "s"} captured`);
-  if (metadata.length) parts.push(`${metadata.length} public metadata item${metadata.length === 1 ? "" : "s"} added`);
+  if (handles.length) parts.push(`${handles.length} handle${handles.length === 1 ? "" : "s"}`);
+  if (urls.length) parts.push(`${urls.length} URL${urls.length === 1 ? "" : "s"}`);
+  if (metadata.length) parts.push(`${metadata.length} metadata item${metadata.length === 1 ? "" : "s"}`);
+  if (sensitiveCount) parts.push(`${sensitiveCount} sensitive data point${sensitiveCount === 1 ? "" : "s"}`);
+  if (cryptoCount) parts.push(`${cryptoCount} crypto lead${cryptoCount === 1 ? "" : "s"}`);
+  if (networkCount) parts.push(`${networkCount} network indicator${networkCount === 1 ? "" : "s"}`);
+  if (locationCount) parts.push(`${locationCount} location clue${locationCount === 1 ? "" : "s"}`);
 
-  const summary = parts.length ? parts.join(", ") : `${result.findings.length} finding${result.findings.length === 1 ? "" : "s"} created`;
+  const summary = parts.length ? parts.join(", ") : `${result.findings.length} result${result.findings.length === 1 ? "" : "s"} found`;
   const highestSignal = handles[0]?.value || urls[0]?.value || result.findings[0]?.value;
-  return `${summary}. Starting point: ${highestSignal}. Verify all grabbed information against the original public source.`;
+  return `${summary}. Top item: ${highestSignal}. Check links to verify.`;
 }
 
 function buildReport(result) {
@@ -1148,30 +1672,48 @@ function buildReport(result) {
     lines.push("");
   }
 
-  lines.push("## Findings");
+  const verifiedSources = result.sources.filter((s) => s.verified === true);
+  if (verifiedSources.length) {
+    lines.push("## ✅ Found Accounts");
+    verifiedSources.forEach((s) => {
+      lines.push(`- ${s.title}: ${s.url}`);
+    });
+    lines.push("");
+  }
 
+  lines.push("## Results Overview");
+  const typeCounts = {};
+  result.findings.forEach((f) => { typeCounts[f.type] = (typeCounts[f.type] || 0) + 1; });
+  Object.entries(typeCounts).forEach(([type, count]) => {
+    lines.push(`- ${count}x ${type}${count > 1 ? "" : ""}`);
+  });
+  lines.push("");
+
+  lines.push("## All Results");
   if (!result.findings.length) {
-    lines.push("- No findings yet.");
+    lines.push("- No results yet.");
   } else {
     result.findings.forEach((finding) => {
       lines.push(`- [${finding.confidence}] ${finding.type}: ${finding.value}`);
       if (finding.notes) lines.push(`  Notes: ${finding.notes}`);
       if (finding.source) lines.push(`  Source: ${finding.source}`);
+      if (finding.tags.length) lines.push(`  Tags: ${finding.tags.join(", ")}`);
     });
   }
 
-  lines.push("", "## Source Leads");
+  lines.push("", "## Links");
   if (!result.sources.length) {
-    lines.push("- No source leads yet.");
+    lines.push("- No links yet.");
   } else {
     result.sources.forEach((source) => {
       lines.push(`- ${source.title}: ${source.url}`);
     });
   }
 
-  lines.push("", "## Safety Flags");
+  lines.push("", "## Alerts");
   result.flags.forEach((flag) => {
-    lines.push(`- [${flag.severity}] ${flag.message}`);
+    const label = flag.severity === "danger" ? "HIGH" : flag.severity === "warn" ? "MEDIUM" : flag.severity === "info" ? "INFO" : flag.severity;
+    lines.push(`- [${label}] ${flag.message}`);
   });
 
   return lines.join("\n");
@@ -1193,18 +1735,21 @@ function renderResult(result) {
 
 function renderFlags(flags) {
   if (!flags.length) {
-    elements.flagList.innerHTML = `<div class="empty-state">No flags yet.</div>`;
+    elements.flagList.innerHTML = `<div class="empty-state">No alerts.</div>`;
     return;
   }
 
   elements.flagList.innerHTML = flags
-    .map((flag) => `<div class="flag ${escapeHtml(flag.severity)}">${escapeHtml(flag.message)}</div>`)
+    .map((flag) => {
+      const sev = flag.severity === "info" ? "info" : flag.severity === "danger" ? "danger" : flag.severity === "warn" ? "warn" : "";
+      return `<div class="flag ${sev}">${escapeHtml(flag.message)}</div>`;
+    })
     .join("");
 }
 
 function renderFindings(findings) {
   if (!findings.length) {
-    elements.findingList.innerHTML = `<div class="empty-state">No findings yet.</div>`;
+    elements.findingList.innerHTML = `<div class="empty-state">No results yet.</div>`;
     return;
   }
 
@@ -1230,16 +1775,25 @@ function renderFindings(findings) {
 
 function renderSources(sources) {
   if (!sources.length) {
-    elements.sourceList.innerHTML = `<div class="empty-state">No source leads yet.</div>`;
+    elements.sourceList.innerHTML = `<div class="empty-state">No links yet.</div>`;
     return;
   }
 
   elements.sourceList.innerHTML = sources
-    .map((source) => `
-      <article class="source-card">
+    .map((source) => {
+      const badge = source.verified === true
+        ? `<span class="tag verified-tag">VERIFIED</span>`
+        : source.verified === false
+          ? `<span class="tag unverified-tag">UNCONFIRMED</span>`
+          : "";
+      return `
+      <article class="source-card" style="${source.verified === true ? 'border-left:3px solid #000;background:#f6f6f6' : ''}">
         <input type="checkbox" ${source.checked ? "checked" : ""} data-source-id="${source.id}" aria-label="Select source">
         <div>
-          <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title)}</a>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title)}</a>
+            ${badge}
+          </div>
           <p>${escapeHtml(source.kind)} - ${escapeHtml(source.target)}</p>
         </div>
         <button class="ghost-button compact" type="button" data-open-url="${escapeAttribute(source.url)}">
@@ -1247,7 +1801,8 @@ function renderSources(sources) {
           Open
         </button>
       </article>
-    `)
+    `;
+    })
     .join("");
 
   elements.sourceList.querySelectorAll("[data-open-url]").forEach((button) => {
@@ -1267,7 +1822,7 @@ function renderTranscript(transcriptResult) {
   if (!container) return;
 
   if (!transcriptResult || !transcriptResult.ok) {
-    container.innerHTML = `<div class="empty-state">No transcript yet. Paste a YouTube URL and click Run.</div>`;
+    container.innerHTML = `<div class="empty-state">No transcript yet. Paste a YouTube link and click Run.</div>`;
     return;
   }
 
@@ -1300,9 +1855,7 @@ function renderTranscript(transcriptResult) {
   if (flagged.length) {
     html += `<div class="section-heading"><h2 style="color:#cc0000">⚠ Flagged Content (${flagged.length})</h2></div>`;
     flagged.forEach((seg) => {
-      const m = Math.floor(seg.start / 60);
-      const s = Math.floor(seg.start % 60);
-      const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
+      const ts = fmtTime(seg.start);
       html += `
         <article class="finding" style="border-left:3px solid #cc0000;background:#fff5f5">
           <div class="finding-header">
@@ -1318,22 +1871,20 @@ function renderTranscript(transcriptResult) {
     });
     html += "<hr style='margin:16px 0;border:none;border-top:1px solid #000'>";
   } else if (!analysis || !analysis.category) {
-    html += `<div class="empty-state">No potentially harmful content detected in this transcript.</div><hr style="margin:16px 0;border:none;border-top:1px solid #000">`;
+    html += `<div class="empty-state">No issues found in this transcript.</div><hr style="margin:16px 0;border:none;border-top:1px solid #000">`;
   }
 
   html += `<div class="section-heading"><h2>Full Transcript</h2></div>`;
 
   chunks.forEach((chunk, i) => {
-    const m = Math.floor(chunk.start / 60);
-    const s = Math.floor(chunk.start % 60);
-    const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
+    const ts = fmtTime(chunk.start);
     const isFlagged = flaggedStarts.has(chunk.start);
     html += `
       <article class="finding"${isFlagged ? ' style="border-left:3px solid #cc0000;background:#fff5f5"' : ""}>
         <div class="finding-header">
           <div>
             <p class="finding-title">[${ts}]${isFlagged ? " ⚠" : ""}</p>
-            <p class="finding-meta">Segment ${i + 1} / ${chunks.length} (${chunk.text.length} chars)${isFlagged ? " — " + escapeHtml(flaggedReasons[chunk.start] || "Flagged") : ""}</p>
+            <p class="finding-meta">Segment ${i + 1} / ${chunks.length}${isFlagged ? " — " + escapeHtml(flaggedReasons[chunk.start] || "Flagged") : ""}</p>
           </div>
           <span class="tag">${ts}</span>
         </div>
@@ -1342,7 +1893,7 @@ function renderTranscript(transcriptResult) {
     `;
   });
 
-  container.innerHTML = html || `<div class="empty-state">No transcript content.</div>`;
+  container.innerHTML = html || `<div class="empty-state">Nothing in transcript.</div>`;
 }
 
 async function runOcr() {
@@ -1368,12 +1919,12 @@ async function runOcr() {
     const text = result?.data?.text?.trim();
     if (text) {
       elements.rawInput.value = [elements.rawInput.value.trim(), text].filter(Boolean).join("\n\n");
-      setStatus("OCR text added.");
+      setStatus("Text from photo added.");
     } else {
-      setStatus("OCR finished, but no text was detected.", "warn");
+      setStatus("No text found in photo.", "warn");
     }
   } catch {
-    setStatus("OCR could not load. Paste the screenshot text manually or check your connection.", "warn");
+    setStatus("Could not read photo text. Try pasting it manually.", "warn");
   } finally {
     elements.ocrButton.disabled = false;
   }
@@ -1422,19 +1973,19 @@ function runImageSearch(mode) {
           window.open(`https://pimeyes.com/en`, "_blank");
           setTimeout(() => { window.open(`https://www.google.com/searchbyimage?image_url=${encodeURIComponent(data.url)}`, "_blank"); }, 500);
         }
-        setStatus(`${mode === "google" ? "Image search" : "Face search"} opened in new tab.`);
+        setStatus(`${mode === "google" ? "Image search" : "Face search"} opened.`);
       } else {
         setStatus("Upload failed.", "warn");
       }
     } catch {
-      setStatus("Upload failed. Check server connection.", "warn");
+      setStatus("Upload failed.", "warn");
     }
   };
   reader.readAsDataURL(state.uploadedImage);
 }
 
 function copyJson() {
-  copyText(JSON.stringify(state.lastResult, null, 2), "JSON copied.");
+  copyText(JSON.stringify(state.lastResult, null, 2), "Data copied.");
 }
 
 function copyReport() {
@@ -1446,7 +1997,7 @@ function copyTranscript() {
   if (report) {
     copyText(report, "Transcript report copied.");
   } else {
-    setStatus("No transcript to copy.", "warn");
+    setStatus("Nothing to copy yet.", "warn");
   }
 }
 
@@ -1483,6 +2034,22 @@ function resetWorkspace() {
 function setStatus(message, tone = "neutral") {
   elements.statusBox.textContent = message;
   elements.statusBox.dataset.tone = tone;
+}
+
+function fmtTime(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function smartTruncate(text, maxLen) {
+  if (!text || text.length <= maxLen) return text || "";
+  const truncated = text.slice(0, maxLen);
+  const lastSpace = truncated.lastIndexOf(" ");
+  if (lastSpace > maxLen * 0.7) return truncated.slice(0, lastSpace) + "...";
+  return truncated + "...";
 }
 
 function unique(values) {

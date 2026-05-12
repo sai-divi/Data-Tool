@@ -34,26 +34,26 @@
           </div>
 
           <div class="mode-switch" role="tablist" aria-label="Collector modes">
-            <button class="mode-button active" type="button" data-mode="web">Web Grabber</button>
-            <button class="mode-button" type="button" data-mode="osint">OSINT Collector</button>
-            <button class="mode-button" type="button" data-mode="transcript">YT Transcript</button>
+            <button class="mode-button active" type="button" data-mode="web">Get Pages</button>
+            <button class="mode-button" type="button" data-mode="osint">Find Info</button>
+            <button class="mode-button" type="button" data-mode="transcript">YouTube</button>
           </div>
 
 
 
           <div class="mode-panel" id="webGrabPanel">
-            <label class="field-label" for="webInput">Public URLs</label>
+            <label class="field-label" for="webInput">Website Links</label>
             <textarea id="webInput" class="field-control text-area" spellcheck="false" placeholder="https://example.com&#10;https://github.com/example"></textarea>
           </div>
 
           <div class="mode-panel hidden" id="osintPanel">
-            <label class="field-label" for="rawInput">OSINT text</label>
-            <textarea id="rawInput" class="field-control text-area" spellcheck="false" placeholder="@youtubehandle&#10;https://instagram.com/example&#10;Paste screenshot text here"></textarea>
+            <label class="field-label" for="rawInput">Names, Links, or Text</label>
+            <textarea id="rawInput" class="field-control text-area" spellcheck="false" placeholder="@username&#10;https://instagram.com/name&#10;Paste any text to search"></textarea>
 
             <div class="drop-zone" id="dropZone">
               <input id="imageInput" type="file" accept="image/*">
               <div class="drop-zone-content">
-                <strong>Drop image here or click to browse</strong>
+                <strong>Drop a photo here or click to browse</strong>
                 <span id="imageFileName" style="font-size:12px;color:#666"></span>
               </div>
               <div class="drop-zone-buttons" id="imageActions" style="display:none">
@@ -78,7 +78,7 @@
           </div>
 
           <div class="mode-panel hidden" id="transcriptPanel">
-            <label class="field-label" for="transcriptInput">YouTube Video URL</label>
+            <label class="field-label" for="transcriptInput">YouTube Link</label>
             <textarea id="transcriptInput" class="field-control text-area" spellcheck="false" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" style="min-height:60px"></textarea>
           </div>
 
@@ -87,9 +87,9 @@
 
         <section class="results-panel" aria-label="Results">
           <div class="tabs" role="tablist" aria-label="Result views">
-            <button class="tab-button active" type="button" data-tab="summary">Summary</button>
-            <button class="tab-button" type="button" data-tab="findings">Findings</button>
-            <button class="tab-button" type="button" data-tab="sources">Sources</button>
+            <button class="tab-button active" type="button" data-tab="summary">Overview</button>
+            <button class="tab-button" type="button" data-tab="findings">Results</button>
+            <button class="tab-button" type="button" data-tab="sources">Links</button>
             <button class="tab-button" type="button" data-tab="report">Report</button>
             <button class="tab-button" type="button" data-tab="transcript">Transcript</button>
           </div>
@@ -98,33 +98,33 @@
             <div class="summary-grid">
               <article class="metric">
                 <span id="metricTargets">0</span>
-                <p>Targets</p>
+                <p>Results</p>
               </article>
               <article class="metric">
                 <span id="metricSources">0</span>
-                <p>Source leads</p>
+                <p>Links</p>
               </article>
               <article class="metric">
                 <span id="metricFlags">0</span>
-                <p>Flags</p>
+                <p>Alerts</p>
               </article>
             </div>
             <div class="analyst-card">
-              <h2>Analyst Summary</h2>
-              <p id="summaryText">Run a collection to generate a concise public-source brief.</p>
+              <h2>Summary</h2>
+              <p id="summaryText">Paste something above and click Run to start.</p>
             </div>
             <div class="section-heading">
-              <h2>Safety Flags</h2>
+              <h2>Alerts</h2>
             </div>
             <div class="flag-list" id="flagList"></div>
           </div>
 
           <div class="tab-panel" id="findingsTab">
             <div class="section-heading">
-              <h2>Findings</h2>
+              <h2>Results</h2>
               <button class="ghost-button compact" id="copyJsonButton" type="button">
                 <i data-lucide="copy"></i>
-                JSON
+                Data
               </button>
             </div>
             <div class="finding-list" id="findingList"></div>
@@ -132,10 +132,10 @@
 
           <div class="tab-panel" id="sourcesTab">
             <div class="section-heading">
-              <h2>Source Leads</h2>
+              <h2>Links</h2>
               <button class="ghost-button compact" id="openAllButton" type="button">
                 <i data-lucide="external-link"></i>
-                Open Checked
+                Open All
               </button>
             </div>
             <div class="source-list" id="sourceList"></div>

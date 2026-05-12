@@ -19,12 +19,38 @@ const PUBLIC_METADATA_HOSTS = new Set([
   "twitter.com",
   "reddit.com",
   "github.com",
-  "twitch.tv"
+  "twitch.tv",
+  "facebook.com",
+  "linkedin.com",
+  "pinterest.com",
+  "tumblr.com",
+  "medium.com",
+  "soundcloud.com",
+  "patreon.com",
+  "onlyfans.com",
+  "threads.net",
+  "bsky.app",
+  "telegram.org",
+  "t.me",
+  "whatsapp.com",
+  "signal.org",
+  "signal.me",
+  "snapchat.com",
+  "discord.com",
+  "discord.gg",
+  "behance.net",
+  "dribbble.com",
+  "flickr.com",
+  "vimeo.com",
+  "codepen.io",
+  "keybase.io",
+  "steamcommunity.com",
+  "producthunt.com"
 ]);
 const ONLINE_CHECK_URLS = ["https://www.google.com/generate_204", "https://example.com/"];
 const CONNECTION_CACHE_MS = 30000;
-const MAX_WEB_GRAB_URLS = 8;
-const MAX_WEB_GRAB_BYTES = 750000;
+const MAX_WEB_GRAB_URLS = 15;
+const MAX_WEB_GRAB_BYTES = 2000000;
 const MAX_REQUEST_BYTES = 65536;
 const IMAGES_DIR = path.join(__dirname, "uploads");
 let connectionCache = null;
@@ -287,7 +313,7 @@ function extractLinks(content, baseUrl) {
   const linkPattern = /<a\b[^>]*href=["']([^"']+)["'][^>]*>(.*?)<\/a>/gis;
   let match;
 
-  while ((match = linkPattern.exec(content)) && links.length < 20) {
+  while ((match = linkPattern.exec(content)) && links.length < 40) {
     try {
       const url = new URL(decodeHtml(match[1]), baseUrl);
       if (url.protocol !== "http:" && url.protocol !== "https:") continue;
@@ -304,12 +330,12 @@ function extractLinks(content, baseUrl) {
 
 function extractHeadings(content) {
   const headings = [];
-  const headingPattern = /<h([1-3])\b[^>]*>(.*?)<\/h\1>/gis;
+  const headingPattern = /<h([1-4])\b[^>]*>(.*?)<\/h\1>/gis;
   let match;
 
-  while ((match = headingPattern.exec(content)) && headings.length < 12) {
+  while ((match = headingPattern.exec(content)) && headings.length < 24) {
     const text = htmlToText(match[2]);
-    if (text) headings.push(text.slice(0, 140));
+    if (text) headings.push(text.slice(0, 200));
   }
 
   return headings;
@@ -329,15 +355,13 @@ function htmlToText(content) {
 }
 
 function summarizeGrabbedContent(content, contentType) {
-  if (contentType.includes("html")) {
-    return htmlToText(content).slice(0, 1800);
-  }
+  const summary = contentType.includes("html") ? htmlToText(content) : content.replace(/\s+/g, " ").trim();
 
-  if (contentType.includes("json")) {
-    return content.replace(/\s+/g, " ").trim().slice(0, 1800);
+  const words = summary.split(/\s+/);
+  if (words.length > 400) {
+    return words.slice(0, 400).join(" ") + `\n\n[... ${summary.length} total chars, ${words.length} total words; truncated to first 400 words]`;
   }
-
-  return content.replace(/\s+/g, " ").trim().slice(0, 1800);
+  return summary;
 }
 
 function extractVideoId(rawValue) {
@@ -668,6 +692,137 @@ const TOXIC_PATTERNS = [
   // ── Animal / dehumanizing comparisons ──
   { pattern: /(?:v[e3]rm[i1]n|p[a4]r[a4]s[i1]t[e3]|r[a4]ts?|pig|c[o0]ckr[o0][a4]ch[e3])\s*(?:pe[o0]pl[e3]|immigr[a4]nts?|r[e3]fug[e3]es?|min[o0]rit[i1]es?)/i, reason: "Dehumanizing language" },
   { pattern: /(?:d[o0]g|b[i1]tch|pr[a4]y)\s*wh[i1]stl[e3]/i, reason: "Dehumanizing language" },
+
+  // ── Additional antisemitic / conspiracy dog whistles ──
+  { pattern: /gl[o0]b[a4]l[i1]st(?:s|ic| agenda| elite)?/i, reason: "Antisemitic dog whistle" },
+  { pattern: /cultur[a4]l\s*m[a4]rxism/i, reason: "Antisemitic dog whistle" },
+  { pattern: /(?:j[e3]wish|j[e3]w)\s*l[o0]bby/i, reason: "Antisemitic conspiracy" },
+  { pattern: /z[i1][o0]n[i1]st\s*[o0]ccup[a4]t[i1][o0]n\s*g[o0]v[e3]rnm[e3]nt/i, reason: "Antisemitic conspiracy (ZOG)" },
+  { pattern: /k[o0]sh[e3]r\s*(?:n[a4]t[i1][o0]n|m[e3]d[i1][a4]|c[o0]nspr[i1]cy)/i, reason: "Antisemitic slur" },
+  { pattern: /syn[a4]g[o0]gu[e3]\s*[o0]f\s*s[a4]t[a4]n/i, reason: "Antisemitic conspiracy" },
+  { pattern: /j[u4]d[e3][o0]-m[a4]s[o0]n[i1]c/i, reason: "Antisemitic conspiracy" },
+  { pattern: /j[u4]d[e3][o0]-b[o0]lsh[e3]v[i1]k/i, reason: "Antisemitic conspiracy" },
+  { pattern: /[a4]uschw[i1]tz\s*(?:w[a4]s\s*a\s*r[e3]s[o0]rt|w[a4]sn[']?t_r[e3][a4]l|h[o0][a4]x)/i, reason: "Holocaust denial" },
+  { pattern: /6_m[i1]ll[i1][o0]n\s*(?:l[i1]e|h[o0][a4]x|f[a4]k[e3])/i, reason: "Holocaust denial" },
+  { pattern: /(?:1488|14_88|88_pr[e3]c[e3]pts)/i, reason: "White supremacist numeric code" },
+  { pattern: /18(?:th)?\s*(?:w[o0]rd|l[e3]tt[e3]r)?/i, reason: "Neo-Nazi code" },
+
+  // ── Additional anti-LGBTQ+ / grooming accusations ──
+  { pattern: /gr[o0][o0]m[e3]r(?:s)?/i, reason: "Anti-LGBTQ+ slur" },
+  { pattern: /gr[o0][o0]ming\s*child/i, reason: "Anti-LGBTQ+ hate" },
+  { pattern: /dr[a4]g\s*qu[e3][e3]n\s*(?:st[o0]ry|sh[o0]w|h[o0]ur)/i, reason: "Anti-LGBTQ+ dog whistle" },
+  { pattern: /tr[a4]nsg[e3]nd[e3]rism/i, reason: "Transphobic rhetoric" },
+  { pattern: /r[a4]pid_[o0]ns[e3]t\s*g[e3]nd[e3]r\s*dysph[o0]ri[a4]/i, reason: "Transphobic conspiracy" },
+  { pattern: /s[o0]cial_c[o0]nt[a4]gi[o0]n\s*(?:g[e3]nd[e3]r|tr[a4]ns)/i, reason: "Transphobic conspiracy" },
+  { pattern: /b[i1][o0]l[o0]gic[a4]l\s*(?:m[a4]l[e3]|f[e3]m[a4]l[e3])\s*(?:in\s*a\s*w[o0]m[a4]n|tr[a4]ns)/i, reason: "Transphobic misgendering" },
+  { pattern: /tr[a4]ns\s*id[e3][o0]l[o0]gy/i, reason: "Transphobic rhetoric" },
+  { pattern: /(?:min[o0]rs?_in|childr[e3]n_at)\s*dr[a4]g_sh[o0]ws/i, reason: "Anti-LGBTQ+ dog whistle" },
+  { pattern: /(?:g[a4]y|h[o0]m[o0]|l[e3]sb[i1][a4]n|tr[a4]ns)\s*(?:agenda|l[o0]bby)/i, reason: "Anti-LGBTQ+ conspiracy" },
+
+  // ── Additional misogynistic / incel ──
+  { pattern: /th[o0]t(?:s|ery)?/i, reason: "Misogynistic slur" },
+  { pattern: /f[e3]m[o0]id(?:s)?/i, reason: "Misogynistic slur" },
+  { pattern: /inc[e3]l(?:s|dom|ry)?/i, reason: "Incel ideology" },
+  { pattern: /bl[a4]ckp[i1]ll(?:e[dr])?/i, reason: "Incel/misogynistic rhetoric" },
+  { pattern: /l[o0]ksm[a4]xx[i1]ng/i, reason: "Incel ideology" },
+  { pattern: /r[e3]dp[i1]ll[e3]d?(?:p[i1]ll)?\s*(?:mis[o0]gyn|w[o0]m[e3]n|f[e3]mini)/i, reason: "Misogynistic rhetoric" },
+  { pattern: /tr[a4]dw[i1]f[e3]/i, reason: "Antifeminist propaganda" },
+  { pattern: /p[a4]ssp[o0]rt\s*br[o0](?:s)?/i, reason: "Misogynistic rhetoric" },
+  { pattern: /(?:[o4]nlyf[a4]ns|[o4]F)\s*m[o0]d[e3]l/i, reason: "Pejorative sex work reference" },
+  { pattern: /(?:w[a4]it|w[a4]m[b4])[a4]?b[i1]t[i1]?s/i, reason: "Sexist harassment" },
+  { pattern: /w[o0]m[e3]n\s*b[e3]\s*pr[o0]p[e3]rty/i, reason: "Sexist discrimination" },
+
+  // ── Additional racial / supremacist ──
+  { pattern: /bl[a4]ck\s*(?:cr[i1]m[e3]|r[a4]p[i1]st)\s*(?:st[a4]ts|st[a4]tistic)/i, reason: "Racial stereotype" },
+  { pattern: /(?:wh[i1]t[e3]|bl[a4]ck)\s*gen[o0]c[i1]d[e3]/i, reason: "Racial incitement" },
+  { pattern: /(?:cr[i1]tic[a4]l_r[a4]c[e3]_th[e3][o0]ry|crt)/i, reason: "Racial dog whistle" },
+  { pattern: /d[e3][i1]\s*(?:hir[e3]|c[a4]ndid[a4]t[e3]|qu[o0]t[a4])/i, reason: "Anti-diversity slur" },
+  { pattern: /[a4]ff[i1]rm[a4]t[i1]v[e3]\s*[a4]ct[i1][o0]n\s*(?:sl[u4]t|sh[a4]m|r[u4]in)/i, reason: "Anti-diversity rhetoric" },
+  { pattern: /r[a4]c[e3]_mix(?:er|ing)?/i, reason: "Racial slur" },
+  { pattern: /m[o0]ng[o0]l[o0]id/i, reason: "Racial slur" },
+  { pattern: /(?:high_?iq|i\.q\.)\s*(?:r[a4]c[e3]|p[o0]pul[a4]t[i1][o0]n|gr[o0]up)/i, reason: "Scientific racism" },
+  { pattern: /n[o0]rd[i1]c\s*(?:r[a4]c[e3]|supr[e3]m[a4]cy|p[o0]pul[a4]t[i1][o0]n)/i, reason: "White supremacist ideology" },
+  { pattern: /(?:e[uo]r[o0]p[e3][a4]n|wh[i1]t[e3])\s*c[i1]v[i1]l[i1]z[a4]t[i1][o0]n/i, reason: "White supremacist dog whistle" },
+  { pattern: /bl[a4]ckf[a4]sh/i, reason: "Racial slur" },
+  { pattern: /p[a4]l[e3]st[i1]n[i1][a4]n\s*(?:r[a4]t|d[o0]g|p[i1]g)/i, reason: "Racial slur" },
+
+  // ── Additional xenophobic / anti-immigration ──
+  { pattern: /[a4]nch[o0]r\s*b[a4]by/i, reason: "Xenophobic slur" },
+  { pattern: /ch[a4][i1]n_m[i1]gr[a4]t[i1][o0]n/i, reason: "Xenophobic rhetoric" },
+  { pattern: /c[a4]r[a4]v[a4]n\s*(?:inv[a4]d[e3]|c[o0]m[i1]ng|h[o0]rd[e3])/i, reason: "Xenophobic rhetoric" },
+  { pattern: /r[e3]fug[e3]e\s*cr[i1]s[i1]s/i, reason: "Xenophobic rhetoric" },
+  { pattern: /(?:musl[i1]m|islam[i1]c)\s*inv[a4]s[i1][o0]n/i, reason: "Islamophobic rhetoric" },
+  { pattern: /(?:cult[u4]r[a4]l|d[e3]m[o0]gr[a4]ph[i1]c)\s*r[e3]pl[a4]c[e3]m[e3]nt/i, reason: "White supremacist conspiracy" },
+  { pattern: /wh[i1]t[e3]\s*fl[i1]ght/i, reason: "Racial rhetoric" },
+  { pattern: /(?:n[o0]n-?wh[i1]t[e3]|n[o0]nwh[i1]t[e3])\s*(?:immigr[a4]t[i1][o0]n|inv[a4]s[i1][o0]n|p[o0]pul[a4]t[i1][o0]n)/i, reason: "White supremacist rhetoric" },
+  { pattern: /(?:third_?w[o0]rld|3rd_w[o0]rld)\s*(?:immigr[a4]nt|inv[a4]d[e3]r|p[o0]v[e3]rty)/i, reason: "Xenophobic rhetoric" },
+  { pattern: /sh[i1]th[o0]l[e3]\s*(?:c[o0]untry|n[a4]t[i1][o0]n|pe[o0]pl[e3])/i, reason: "Xenophobic hate" },
+  { pattern: /br[e3][a4]x[i1]t\s*(?:w[a4]s_right|s[a4]v[e3]d_us)/i, reason: "Nationalist rhetoric" },
+
+  // ── Additional extremist / terrorist ──
+  { pattern: /[a4]cc[e3]l[e3]r[a4]t[i1][o0]n[i1]sm/i, reason: "Extremist accelerationism" },
+  { pattern: /l[o0]n[e3]_w[o0]lf\s*(?:[a4]tt[a4]ck|act[i1][o0]n|warri[o0]r)?/i, reason: "Extremist rhetoric" },
+  { pattern: /d[a4]y_[o0]f_th[e3]_r[o0]p[e3]/i, reason: "Extremist terrorism reference" },
+  { pattern: /b[o0][o0]g[a4]l[o0][o0](?:b[o0]ys)?/i, reason: "Extremist movement reference" },
+  { pattern: /[a4]t[o0]mw[a4]ff[e3]n/i, reason: "Neo-Nazi terrorist group" },
+  { pattern: /s[e3]c[o0]nd_c[i1]v[i1]l_w[a4]r/i, reason: "Incitement to civil war" },
+  { pattern: /st[o0]rm_th[e3]_c[a4]pit[o0]l/i, reason: "Incitement to violence" },
+  { pattern: /h[a4]ng_\w+\s*(?:f[o0]r_tr[a4][i1]s[o0]n|tr[a4]it[o0]r)/i, reason: "Incitement to violence" },
+  { pattern: /r[o0]p[e3]_\w+_s[e3]lf/i, reason: "Self-harm encouragement" },
+  { pattern: /n[e3]ck_y[o0]urs[e3]lf/i, reason: "Self-harm encouragement" },
+  { pattern: /d[o0]_th[e3]_w[o0]rld_[a4]_f[a4]v[o0]r(?:\s*y[o0]urs[e3]lf)?/i, reason: "Self-harm encouragement" },
+  { pattern: /kys\b/i, reason: "Suicide encouragement" },
+  { pattern: /(?:go_r[o0]p[e3]|g[o0]_r[o0]p[e3])/i, reason: "Self-harm encouragement" },
+  { pattern: /tr[i1]gg[e3]r_everything/i, reason: "Threatening language" },
+
+  // ── Additional misinformation / conspiracy ──
+  { pattern: /pl[a4]nd[e3]mic/i, reason: "Misinformation (COVID)" },
+  { pattern: /sc[a4]md[e3]mic/i, reason: "Misinformation (COVID)" },
+  { pattern: /c[o0]v[i1]d\s*(?:h[o0][a4]x|sc[a4]m|f[a4]k[e3])/i, reason: "Misinformation (COVID)" },
+  { pattern: /vacc[i1]n[e3]\s*(?:sh[e3]d|inj[u4]ry|m[i1]cr[o0]ch[i1]p)/i, reason: "Misinformation (vaccine)" },
+  { pattern: /5g\s*(?:c[a4]us[e3]s|c[a4]ncer|c[o0]r[o0]n[a4]|c[o0]vid)/i, reason: "Misinformation (5G)" },
+  { pattern: /ch[e3]mtr[a4][i1]ls/i, reason: "Misinformation (chemtrails)" },
+  { pattern: /fl[a4][a4]t_\w+th/i, reason: "Misinformation (flat earth)" },
+  { pattern: /m[o0][o0]n_l[a4]nd[i1]ng\s*h[o0][a4]x/i, reason: "Misinformation (moon landing)" },
+  { pattern: /[a4]dr[e3]n[o0]chr[o0]m[e3]/i, reason: "QAnon conspiracy" },
+  { pattern: /q[a4]n[o0]n(?:s)?/i, reason: "QAnon conspiracy" },
+  { pattern: /wwg1wga/i, reason: "QAnon slogan" },
+  { pattern: /th[e3]_st[o0]rm\s*(?:is_c[o0]ming|is_h[e3]r[e3])/i, reason: "QAnon conspiracy" },
+  { pattern: /c[a4]b[a4]l\s*(?:run|c[o0]ntr[o0]l|rul[e3])/i, reason: "Conspiracy propaganda" },
+  { pattern: /d[e3][e3]p_st[a4]t[e3]\s*(?:run|c[o0]ntr[o0]l|agenda|pupp[e3]t)/i, reason: "Conspiracy propaganda" },
+  { pattern: /f[e3]m[a4]_c[a4]mps/i, reason: "Conspiracy (FEMA camps)" },
+  { pattern: /m[a4]rt[i1][a4]l_l[a4]w\s*(?:immi?n[e3]nt|c[o0]ming|d[e3]cl[a4]r[e3]d)/i, reason: "Conspiracy propaganda" },
+  { pattern: /d[e3]p[o0]pul[a4]t[i1][o0]n\s*(?:agenda|plan|pr[o0]gr[a4]m)/i, reason: "Conspiracy propaganda" },
+  { pattern: /[a4]g[e3]nd[a4]21/i, reason: "Conspiracy propaganda" },
+  { pattern: /n[e3]w_w[o0]rld_[o0]rd[e3]r\s*(?:agenda|immi?n[e3]nt|is_c[o0]ming)/i, reason: "New World Order conspiracy" },
+  { pattern: /gr[e3][a4]t_r[e3]s[e3]t\s*(?:agenda|comi?ng|plan)/i, reason: "Conspiracy (Great Reset)" },
+
+  // ── Additional ableist ──
+  { pattern: /n[u4]mbnuts/i, reason: "Ableist slur" },
+  { pattern: /wind[o0]w_l[i1]ck[e3]r/i, reason: "Ableist slur" },
+  { pattern: /speci[a4]l\s*(?:ne[e3]ds|kind|ed)\s*(?:stup[i1]d|r[e3]t[a4]rd)/i, reason: "Ableist hate" },
+  { pattern: /d[o0]wny(?:\s*syndrome)?\s*(?:kid|child|pe[o0]pl[e3])/i, reason: "Ableist slur" },
+  { pattern: /r[a4][i1]nm[a4]n\s*(?:m[o0]m[e3]nt|j[o0]k[e3])/i, reason: "Ableist slur" },
+  { pattern: /r[e3]t[a4]rd(?:ed)?\s*(?:l[i1]b|p[o0]lic[y5])/i, reason: "Ableist slur" },
+  { pattern: /aut[i1]sm\s*(?:sp[e3]aks|aw[a4]r[e3]n[e3]ss)_m[o0]nth/i, reason: "Ableist discrimination" },
+
+  // ── Additional body shaming ──
+  { pattern: /l[a4]nd_wh[a4]l[e3]/i, reason: "Body shaming" },
+  { pattern: /h[a4]m_pl[a4]n[e3]t/i, reason: "Body shaming" },
+  { pattern: /f[a4]tty(?:\s*b[i1]tch|\s*sl[u4]t)?/i, reason: "Body shaming" },
+  { pattern: /r[e3]v[e3]rs[e3]_[a4]n[o0]r[e3]xi[a4]/i, reason: "Body shaming" },
+  { pattern: /sk[i1]nny\s*(?:b[i1]tch|sl[u4]t|wh[o0]r[e3])/i, reason: "Body shaming" },
+  { pattern: /an[o0]r[e3]xic(?:\s*sl[u4]t|\s*b[i1]tch)?/i, reason: "Body shaming" },
+  { pattern: /wh[a4]l[e3]\s*(?:b[i1]tch|sl[u4]t|ass)/i, reason: "Body shaming" },
+
+  // ── Additional bullying / harassment ──
+  { pattern: /n[o0]b[o0]dy_l[i1]k[e3]s_y[o0]u/i, reason: "Harassment" },
+  { pattern: /(?:every[o0]n[e3]|n[o0]_[o0]n[e3])\s*h[a4]t[e3]s_y[o0]u/i, reason: "Harassment" },
+  { pattern: /y[o0]u['r]?e?\s*(?:us[e3]l[e3]ss|w[o0]rthl[e3]ss|a_disgr[a4]c[e3])/i, reason: "Harassment" },
+  { pattern: /y[o0]u_sh[o0]uld\s*(?:un[a4]liv[e3]|k[i1]ll|d[i1]e|r[o0]p[e3])/i, reason: "Self-harm encouragement" },
+  { pattern: /d[o0]_[a4]_f[a4]v[o0]r_[a4]nd_k[i1]ll_y[o0]urs[e3]lf/i, reason: "Self-harm encouragement" },
+  { pattern: /w[o0]rld_[i1]s_b[e3]tt[e3]r_with[o0]ut_y[o0]u/i, reason: "Harassment" },
+  { pattern: /n[o0]_[o0]n[e3]_w[a4]nts_y[o0]u_h[e3]r[e3]/i, reason: "Harassment" },
 ];
 
 function flagToxicContent(chunks) {
@@ -692,26 +847,61 @@ const VIOLATION_CATEGORIES = [
 
 function classifyViolation(reasons) {
   const joined = reasons.join(" ");
-  if (/self.?harm|suicide|eating.disorder|anorexi/i.test(joined)) return "Suicide self harm or eating disorders";
-  if (/death.threat|kill|murder|shoot|bomb|lynch|hang|violent.extremism|genocidal|death.wish|violent.threat/i.test(joined)) return "Violent or repulsive content";
-  if (/child.abuse|pedophil|minor/i.test(joined)) return "Child abuse";
-  if (/terrorism|terrorist|jihad|extremist.rhetoric|incitement.to.violence/i.test(joined)) return "Promotes terrorism";
-  if (/misinform|conspiracy.propaganda|fake.news|hoax/i.test(joined)) return "Misinformation";
-  if (/racial.slur|racial.supremacy|racist|white.supremacist|racial.incitement|racial.rhetoric|hate.propaganda|supremacist.ideology|dehumanizing/i.test(joined)) return "Hateful or abusive content";
-  if (/homophobic|transphobic|anti-lgbt|lgbt.hate/i.test(joined)) return "Hateful or abusive content";
-  if (/religious.slur|religious.hate|antisemitic|islamophobic|nazi.apologia|holocaust.denial|anti.christian/i.test(joined)) return "Hateful or abusive content";
-  if (/xenophobic|anti.immigration/i.test(joined)) return "Hateful or abusive content";
-  if (/sexist|misogyn|violence.against.women|rape.apologia/i.test(joined)) return "Hateful or abusive content";
-  if (/harass|bully|threat|death.wish/i.test(joined)) return "Harassment or bullying";
+
+  // Critical / highest severity
+  if (/child.abuse|pedophil|minor.abuse|cp_|child.*p[o0]rn/i.test(joined)) return "Child abuse";
+  if (/self.?harm|suicide|eating.disorder|anorexi|kill_yours[e3]lf|r[o0]p[e3]_yours[e3]lf|neck_yours[e3]lf/i.test(joined)) return "Suicide self harm or eating disorders";
+  if (/terrorism|terrorist|jihad.*extremist|accelerationism|lone_wolf.*attack|atomwaffen|boogaloo/i.test(joined)) return "Promotes terrorism";
+
+  // Violence / threats
+  if (/death.threat|kill.*you|murder|shoot|bomb|lynch|hang.*traitor/ig.test(joined)) return "Violent or repulsive content";
+  if (/violent.extremism|genocidal|violent.threat|civil.war|st[o0]rm_th[e3]_c[a4]pit[o0]l/i.test(joined)) return "Violent or repulsive content";
+  if (/incitement.to.violence|take_up_arms|arm_yours[e3]lv[e3]s/i.test(joined)) return "Violent or repulsive content";
+
+  // Hate speech — racial
+  if (/racial.slur|racial.supremacy|racist|white.supremacist|racial.incitement|racial.rhetoric|hate.propaganda/i.test(joined)) return "Hateful or abusive content";
+  if (/supremacist.ideology|dehumanizing|scientific.racism|race.war|ethnic.cleansing/i.test(joined)) return "Hateful or abusive content";
+  if (/neo.nazi|nazi.ideology|nazi.apologia|white.supr[e3]m[a4]cist|white.genocide|white.shave|ethn[o0]st[a4]t[e3]/i.test(joined)) return "Hateful or abusive content";
+  if (/antisemitic|jewish.conspiracy|zionist.*conspiracy|holocaust.denial|judeo/i.test(joined)) return "Hateful or abusive content";
+  if (/islamophobic|muslim.*slur|muslim.*invasion|islamist.*disease|anti.christian/i.test(joined)) return "Hateful or abusive content";
+  if (/homophobic|transphobic|anti.lgbt|lgbt.hate|groomer.*lgbt|drag.*queen.*hate/i.test(joined)) return "Hateful or abusive content";
+  if (/xenophobic|anti.immigration|anchor.baby|chain.migration|go_back_to_your|send_them_back/i.test(joined)) return "Hateful or abusive content";
+
+  // Misogyny / sexism
+  if (/sexist|misogyn|violence.against.women|rape.apologia|incel|thot|femoid/i.test(joined)) return "Hateful or abusive content";
+  if (/women.*property|women.*inferior|women.*kitchen|breeder|feminazi/i.test(joined)) return "Hateful or abusive content";
+
+  // Harassment / bullying
+  if (/harass|bully|death.wish|threat|othering|y[o0]u_pe[o0]pl[e]|these_pe[o0]pl[e]/i.test(joined)) return "Harassment or bullying";
+  if (/worthless|useless.*you|nobody_likes|no_one_wants|hates_you/i.test(joined)) return "Harassment or bullying";
+
+  // Misinformation
+  if (/misinform|conspiracy.propaganda|fake.news|hoax|plandemic|scamdemic|covid.*hoax|vaccine.*microchip|q[a4]n[o0]n|newworldorder|great.reset|depopulation/i.test(joined)) return "Misinformation";
+
+  // Ableist / body shaming / profanity
+  if (/ableist|body.shaming|ageist|dogwhistle/i.test(joined)) return "Hateful or abusive content";
+  if (/profanity|mild.profanity/i.test(joined)) return "Hateful or abusive content";
+
+  // Spam / misleading
   if (/spam|misleading|scam/i.test(joined)) return "Spam or misleading";
-  if (/profanity|mild.profanity|ableist.slur|body.shaming|ageist|othering|dogwhistle/i.test(joined)) return "Hateful or abusive content";
+
   return null;
 }
 
 function formatTimestampShort(seconds) {
-  const m = Math.floor(seconds / 60);
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
   const s = Math.floor(seconds % 60);
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}:00`;
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function smartTruncate(text, maxLen) {
+  if (!text || text.length <= maxLen) return text || "";
+  const truncated = text.slice(0, maxLen);
+  const lastSpace = truncated.lastIndexOf(" ");
+  if (lastSpace > maxLen * 0.7) return truncated.slice(0, lastSpace) + "...";
+  return truncated + "...";
 }
 
 function generateViolationReport(videoId, info, description, thumbnailUrl, segments, flaggedSegments) {
@@ -732,13 +922,16 @@ function generateViolationReport(videoId, info, description, thumbnailUrl, segme
   // Title
   lines.push(`[title] "${info.title || "Untitled"}"`);
   // Description
-  lines.push(`[description] "${(description || "No description").slice(0, 300)}"`);
+  const descText = (description || "No description");
+  lines.push(`[description] "${descText.length > 300 ? smartTruncate(descText, 300) : descText}"`);
   // Video segments
   flaggedSegments.forEach((seg) => {
-    lines.push(`[${formatTimestampShort(seg.start)}] "${seg.text.slice(0, 200)}"`);
+    const text = seg.text || "";
+    const displayText = text.length > 250 ? smartTruncate(text, 250) : text;
+    lines.push(`[${formatTimestampShort(seg.start)}] "${displayText}"`);
   });
   if (!flaggedSegments.length) {
-    lines.push(`[00:00:00] "Transcript content requires further review"`);
+    lines.push(`[00:00] "Transcript content requires further review"`);
   }
 
   const output2 = lines.join("\n");
@@ -793,8 +986,12 @@ async function fetchYouTubeTranscript(videoId, signal) {
   const tracks = playerJson?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
   if (!tracks || !tracks.length) throw new Error("No captions available for this video.");
 
-  // 6) Pick the best track (prefer English)
-  const track = tracks.find((t) => t.languageCode === "en" || t.languageCode?.startsWith("en")) || tracks[0];
+  // 6) Pick the best track (prefer English, then auto-generated English, then first available)
+  const track = tracks.find((t) => t.languageCode === "en" && !t.kind) ||
+    tracks.find((t) => t.languageCode === "en") ||
+    tracks.find((t) => t.languageCode?.startsWith("en")) ||
+    tracks.find((t) => t.languageCode === "a.en" || t.languageCode === "en-US" || t.languageCode === "en-GB") ||
+    tracks[0];
   const baseUrl = track.baseUrl || track.url;
   if (!baseUrl) throw new Error("No caption track URL found.");
 
@@ -1126,6 +1323,56 @@ function readRawBody(req, maxBytes) {
   });
 }
 
+async function handleVerifyProfiles(req, res) {
+  let payload;
+  try { payload = await readRequestJson(req); } catch {
+    sendJson(res, 400, { ok: false, error: "Invalid JSON." }); return;
+  }
+  const urls = Array.isArray(payload.urls) ? payload.urls.slice(0, 30) : [];
+  if (!urls.length) {
+    sendJson(res, 400, { ok: false, error: "No URLs provided." }); return;
+  }
+
+  const results = [];
+  for (const url of urls) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9"
+        }
+      });
+
+      const finalUrl = response.url || url;
+      const status = response.status;
+
+      // True account exists: 200 and final URL is not a search/404/signup page
+      let exists = false;
+      if (status >= 200 && status < 300) {
+        const lowerFinal = finalUrl.toLowerCase();
+        // Exclude signup, search, 404 pages
+        if (lowerFinal.includes("signup") || lowerFinal.includes("sign_up") || lowerFinal.includes("register") || lowerFinal.includes("login") || lowerFinal.includes("404") || lowerFinal.includes("notfound") || lowerFinal.includes("search?")) {
+          exists = false;
+        } else {
+          exists = true;
+        }
+      }
+
+      results.push({ url, finalUrl, status, exists, checked: true, error: null });
+    } catch (err) {
+      results.push({ url, finalUrl: url, status: 0, exists: false, checked: true, error: err.name === "AbortError" ? "Timeout" : err.message });
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  sendJson(res, 200, { ok: true, results });
+}
+
 async function handleImageUpload(req, res) {
   let body;
   try { body = await readRawBody(req, 5242880); } catch { sendJson(res, 400, { ok: false, error: "Request too large." }); return; }
@@ -1149,6 +1396,11 @@ const server = http.createServer((req, res) => {
   // CORS headers for images served to search engines
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST");
+
+  if (req.method === "POST" && req.url === "/api/verify-profiles") {
+    handleVerifyProfiles(req, res);
+    return;
+  }
 
   if (req.method === "POST" && req.url === "/api/upload-image") {
     handleImageUpload(req, res);
