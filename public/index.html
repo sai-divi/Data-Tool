@@ -38,6 +38,7 @@
           <div class="mode-switch" role="tablist" aria-label="Collector modes">
             <button class="mode-button active" type="button" data-mode="web">Web Grabber</button>
             <button class="mode-button" type="button" data-mode="osint">OSINT Collector</button>
+            <button class="mode-button" type="button" data-mode="transcript">YT Transcript</button>
           </div>
 
           <div class="connection-panel">
@@ -92,6 +93,11 @@
             </div>
           </div>
 
+          <div class="mode-panel hidden" id="transcriptPanel">
+            <label class="field-label" for="transcriptInput">YouTube Video URL</label>
+            <textarea id="transcriptInput" class="field-control text-area" spellcheck="false" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" style="min-height:60px"></textarea>
+          </div>
+
           <div class="consent-row">
             <input id="consentCheck" type="checkbox" checked>
             <label for="consentCheck">Public or Authorized use</label>
@@ -106,6 +112,7 @@
             <button class="tab-button" type="button" data-tab="findings">Findings</button>
             <button class="tab-button" type="button" data-tab="sources">Sources</button>
             <button class="tab-button" type="button" data-tab="report">Report</button>
+            <button class="tab-button" type="button" data-tab="transcript">Transcript</button>
           </div>
 
           <div class="tab-panel active" id="summaryTab">
@@ -164,6 +171,17 @@
               </button>
             </div>
             <textarea id="reportOutput" class="report-output" readonly></textarea>
+          </div>
+
+          <div class="tab-panel" id="transcriptTab">
+            <div class="section-heading">
+              <h2>Transcript</h2>
+              <button class="ghost-button compact" id="copyTranscriptButton" type="button">
+                <i data-lucide="clipboard"></i>
+                Copy
+              </button>
+            </div>
+            <div id="transcriptContent"></div>
           </div>
         </section>
       </main>

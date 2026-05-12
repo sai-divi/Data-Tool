@@ -50,6 +50,8 @@ const elements = {
   modeButtons: document.querySelectorAll(".mode-button"),
   webGrabPanel: document.querySelector("#webGrabPanel"),
   osintPanel: document.querySelector("#osintPanel"),
+  transcriptPanel: document.querySelector("#transcriptPanel"),
+  transcriptInput: document.querySelector("#transcriptInput"),
   webInput: document.querySelector("#webInput"),
   targetType: document.querySelector("#targetType"),
   rawInput: document.querySelector("#rawInput"),
@@ -68,6 +70,7 @@ const elements = {
   clearButton: document.querySelector("#clearButton"),
   copyJsonButton: document.querySelector("#copyJsonButton"),
   copyReportButton: document.querySelector("#copyReportButton"),
+  copyTranscriptButton: document.querySelector("#copyTranscriptButton"),
   openAllButton: document.querySelector("#openAllButton"),
   metricTargets: document.querySelector("#metricTargets"),
   metricSources: document.querySelector("#metricSources"),
@@ -106,6 +109,7 @@ function bindInputs() {
   elements.ocrButton.addEventListener("click", runOcr);
   elements.copyJsonButton.addEventListener("click", copyJson);
   elements.copyReportButton.addEventListener("click", copyReport);
+  elements.copyTranscriptButton.addEventListener("click", copyTranscript);
   elements.openAllButton.addEventListener("click", openCheckedSources);
   elements.connectionButton.addEventListener("click", () => updateConnectionStatus(true));
   elements.onlineMode.addEventListener("change", () => {
@@ -155,8 +159,11 @@ function setMode(mode) {
   elements.modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
   elements.webGrabPanel.classList.toggle("hidden", mode !== "web");
   elements.osintPanel.classList.toggle("hidden", mode !== "osint");
+  elements.transcriptPanel.classList.toggle("hidden", mode !== "transcript");
   elements.runButton.lastChild.textContent = " Run";
-  setStatus(mode === "web" ? "Ready to grab public web pages." : "Ready for OSINT collection.");
+  if (mode === "web") setStatus("Ready to grab public web pages.");
+  else if (mode === "transcript") setStatus("Ready. Paste a YouTube video URL.");
+  else setStatus("Ready for OSINT collection.");
 }
 
 async function updateConnectionStatus(force = false) {
@@ -224,13 +231,19 @@ function createEmptyResult() {
     rawText: "",
     youtubeMetadata: [],
     onlineMetadata: [],
-    webPages: []
+    webPages: [],
+    transcriptResult: null
   };
 }
 
 async function runCurrentMode() {
   if (state.activeMode === "web") {
     await runWebGrab();
+    return;
+  }
+
+  if (state.activeMode === "transcript") {
+    await runYouTubeTranscript();
     return;
   }
 
@@ -368,6 +381,88 @@ function addWebPageFinding(result, page) {
       checked: false
     });
   });
+}
+
+async function runYouTubeTranscript() {
+  if (!elements.consentCheck.checked) {
+    setStatus("Collection paused until public/authorized use is confirmed.", "warn");
+    return;
+  }
+
+  const url = elements.transcriptInput.value.trim();
+  if (!url) {
+    setStatus("Paste a YouTube video URL first.", "warn");
+    return;
+  }
+
+  const canCollectOnline = await ensureOnlineConnection();
+  if (!canCollectOnline) {
+    setStatus("Internet is required for transcript fetching.", "warn");
+    return;
+  }
+
+  setStatus("Fetching YouTube transcript...");
+  elements.runButton.disabled = true;
+
+  try {
+    const response = await fetch(`/api/youtube/transcript?url=${encodeURIComponent(url)}`, { cache: "no-store" });
+    const data = await response.json();
+
+    const result = createEmptyResult();
+    result.rawText = url;
+    result.mode = "transcript";
+
+    if (data.ok) {
+      result.transcriptResult = data;
+      addFinding(result, {
+        type: "YouTube Transcript",
+        value: data.title || `Video ${data.videoId}`,
+        confidence: "high",
+        source: `https://www.youtube.com/watch?v=${data.videoId}`,
+        notes: `Channel: ${data.channel || "Unknown"} | ${data.chunkCount} segments | ${data.wordCount} words`,
+        tags: ["youtube", "transcript"]
+      });
+      if (data.flaggedSegments?.length) {
+        addFinding(result, {
+          type: "Flagged Content Alert",
+          value: `${data.flaggedSegments.length} potentially harmful segment(s) detected`,
+          confidence: "medium",
+          source: `https://www.youtube.com/watch?v=${data.videoId}`,
+          notes: `Reasons: ${[...new Set(data.flaggedSegments.map((s) => s.reason))].join(", ")}`,
+          tags: ["youtube", "transcript", "flagged"]
+        });
+        data.flaggedSegments.forEach((seg) => {
+          const m = Math.floor(seg.start / 60);
+          const s = Math.floor(seg.start % 60);
+          const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
+          addFlag(result, "danger", `[${ts}] ${seg.reason}: "${seg.text.slice(0, 120)}"`);
+        });
+      }
+      addSource(result, {
+        title: data.title || "YouTube Video",
+        url: `https://www.youtube.com/watch?v=${data.videoId}`,
+        kind: "YouTube",
+        target: data.videoId,
+        checked: true
+      });
+    } else {
+      addFlag(result, "warn", data.error || "Transcript could not be fetched.");
+    }
+
+    addBaselineFlags(result);
+    result.summary = buildSummary(result);
+    result.report = buildReport(result);
+    state.lastResult = result;
+    renderResult(result);
+
+    setStatus(data.ok
+      ? `Transcript grabbed: ${data.chunkCount} segments, ${data.wordCount} words.`
+      : `Transcript failed: ${data.error}`);
+  } catch {
+    setStatus("Transcript fetch failed.", "warn");
+  } finally {
+    elements.runButton.disabled = false;
+  }
 }
 
 async function runOsintCollection() {
@@ -797,6 +892,13 @@ function buildSummary(result) {
   const metadata = result.findings.filter((finding) => finding.tags.includes("metadata"));
   const webPages = result.webPages || [];
 
+  if (result.transcriptResult?.ok) {
+    const t = result.transcriptResult;
+    const flags = t.flaggedSegments?.length || 0;
+    const base = `YouTube transcript grabbed: "${t.title || "Untitled"}" by ${t.channel || "Unknown"} — ${t.chunkCount} segments, ${t.wordCount} words.`;
+    return flags ? `${base} ⚠ ${flags} potentially harmful segment(s) flagged. See transcript tab.` : `${base} No harmful content detected.`;
+  }
+
   if (!result.findings.length && !result.sources.length) {
     return "No public-source findings have been created yet.";
   }
@@ -817,6 +919,14 @@ function buildSummary(result) {
 }
 
 function buildReport(result) {
+  if (result.transcriptResult?.report) {
+    const data = result.transcriptResult;
+    if (data.flaggedSegments?.length) {
+      return "⚠ ===== FLAGGED CONTENT REPORT ===== ⚠\n\n" + data.report;
+    }
+    return data.report;
+  }
+
   const lines = [
     "# Information Collection Report",
     "",
@@ -876,6 +986,7 @@ function renderResult(result) {
   renderFlags(result.flags);
   renderFindings(result.findings);
   renderSources(result.sources);
+  renderTranscript(result.transcriptResult);
   refreshIcons();
 }
 
@@ -950,6 +1061,71 @@ function renderSources(sources) {
   });
 }
 
+function renderTranscript(transcriptResult) {
+  const container = document.querySelector("#transcriptContent");
+  if (!container) return;
+
+  if (!transcriptResult || !transcriptResult.ok) {
+    container.innerHTML = `<div class="empty-state">No transcript yet. Paste a YouTube URL and click Run.</div>`;
+    return;
+  }
+
+  const chunks = transcriptResult.chunks || [];
+  const flagged = transcriptResult.flaggedSegments || [];
+  const flaggedStarts = new Set(flagged.map((f) => f.start));
+  const flaggedReasons = {};
+  flagged.forEach((f) => { flaggedReasons[f.start] = f.reason; });
+
+  let html = "";
+
+  if (flagged.length) {
+    html += `<div class="section-heading" style="margin-top:0"><h2 style="color:#cc0000">⚠ Flagged Content (${flagged.length})</h2></div>`;
+    flagged.forEach((seg) => {
+      const m = Math.floor(seg.start / 60);
+      const s = Math.floor(seg.start % 60);
+      const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
+      html += `
+        <article class="finding" style="border-left:3px solid #cc0000;background:#fff5f5">
+          <div class="finding-header">
+            <div>
+              <p class="finding-title">[${ts}] ⚠ ${escapeHtml(seg.reason)}</p>
+              <p class="finding-meta">Flagged segment</p>
+            </div>
+            <span class="tag" style="background:#cc0000;color:#fff;border-color:#cc0000">${ts}</span>
+          </div>
+          <p class="finding-meta">${escapeHtml(seg.text)}</p>
+        </article>
+      `;
+    });
+    html += "<hr style='margin:16px 0;border:none;border-top:1px solid #000'>";
+  } else {
+    html += `<div class="empty-state">No potentially harmful content detected in this transcript.</div><hr style="margin:16px 0;border:none;border-top:1px solid #000">`;
+  }
+
+  html += `<div class="section-heading"><h2>Full Transcript</h2></div>`;
+
+  chunks.forEach((chunk, i) => {
+    const m = Math.floor(chunk.start / 60);
+    const s = Math.floor(chunk.start % 60);
+    const ts = m > 0 ? `${m}:${String(s).padStart(2, "0")}` : `0:${String(s).padStart(2, "0")}`;
+    const isFlagged = flaggedStarts.has(chunk.start);
+    html += `
+      <article class="finding"${isFlagged ? ' style="border-left:3px solid #cc0000;background:#fff5f5"' : ""}>
+        <div class="finding-header">
+          <div>
+            <p class="finding-title">[${ts}]${isFlagged ? " ⚠" : ""}</p>
+            <p class="finding-meta">Segment ${i + 1} / ${chunks.length} (${chunk.text.length} chars)${isFlagged ? " — " + escapeHtml(flaggedReasons[chunk.start] || "Flagged") : ""}</p>
+          </div>
+          <span class="tag">${ts}</span>
+        </div>
+        <p class="finding-meta">${escapeHtml(chunk.text)}</p>
+      </article>
+    `;
+  });
+
+  container.innerHTML = html || `<div class="empty-state">No transcript content.</div>`;
+}
+
 async function runOcr() {
   if (!state.uploadedImage) {
     setStatus("Choose a screenshot first.", "warn");
@@ -1013,6 +1189,15 @@ function copyReport() {
   copyText(elements.reportOutput.value, "Report copied.");
 }
 
+function copyTranscript() {
+  const report = state.lastResult.transcriptResult?.report;
+  if (report) {
+    copyText(report, "Transcript report copied.");
+  } else {
+    setStatus("No transcript to copy.", "warn");
+  }
+}
+
 async function copyText(text, successMessage) {
   try {
     await navigator.clipboard.writeText(text);
@@ -1036,6 +1221,7 @@ function resetWorkspace() {
   state.lastResult = createEmptyResult();
   elements.webInput.value = "";
   elements.rawInput.value = "";
+  elements.transcriptInput.value = "";
   elements.imageInput.value = "";
   elements.previewWrap.classList.add("hidden");
   elements.targetType.value = "auto";

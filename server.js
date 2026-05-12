@@ -338,6 +338,320 @@ function summarizeGrabbedContent(content, contentType) {
   return content.replace(/\s+/g, " ").trim().slice(0, 1800);
 }
 
+function extractVideoId(rawValue) {
+  const trimmed = String(rawValue || "").trim();
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/watch\?.*?v=([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    if (match) return match[1];
+  }
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  return null;
+}
+
+function formatTimestamp(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function chunkTranscript(segments, maxChars = 500) {
+  const chunks = [];
+  let currentChunk = "";
+  let currentStart = 0;
+  for (const seg of segments) {
+    const text = (seg.text || "").replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    if (currentChunk.length + text.length + 1 > maxChars && currentChunk) {
+      chunks.push({ text: currentChunk.trim(), start: currentStart });
+      currentChunk = "";
+      currentStart = seg.start;
+    }
+    if (!currentChunk) currentStart = seg.start;
+    currentChunk += (currentChunk ? " " : "") + text;
+  }
+  if (currentChunk) chunks.push({ text: currentChunk.trim(), start: currentStart });
+  return chunks;
+}
+
+function buildTranscriptReport(videoId, info, chunks, flaggedSegments) {
+  const lines = [
+    "YOUTUBE TRANSCRIPT REPORT",
+    "=".repeat(60),
+    "",
+    `Video: ${info.title || "Unknown"}`,
+    `Channel: ${info.channel || "Unknown"}`,
+    `URL: https://www.youtube.com/watch?v=${videoId}`,
+    `Total transcript segments: ${chunks.length}`,
+    flaggedSegments.length ? `Potentially harmful content flagged: ${flaggedSegments.length} segment(s)` : "No potentially harmful content detected.",
+    "",
+    "=".repeat(60),
+    "TRANSCRIPT WITH TIMESTAMPS",
+    "=".repeat(60),
+    ""
+  ];
+  chunks.forEach((chunk) => {
+    const ts = formatTimestamp(chunk.start);
+    lines.push(`[${ts}]`);
+    lines.push(chunk.text);
+    lines.push("");
+  });
+  if (flaggedSegments.length) {
+    lines.push("=".repeat(60));
+    lines.push("FLAGGED CONTENT REPORT");
+    lines.push("=".repeat(60));
+    lines.push("The following segments contain potentially harmful content");
+    lines.push("(hate speech, racism, stereotyping, harassment, threats).");
+    lines.push("");
+    flaggedSegments.forEach((seg) => {
+      lines.push(`[${formatTimestamp(seg.start)}] (${seg.reason})`);
+      lines.push(seg.text);
+      lines.push("");
+    });
+    lines.push("=".repeat(60));
+    lines.push("End of flagged content report.");
+  }
+  lines.push("=".repeat(60));
+  lines.push("End of transcript report.");
+  return lines.join("\n");
+}
+
+const TOXIC_PATTERNS = [
+  // ── Bad words / Profanity ──
+  { pattern: /\bf[u4]ck(?:\s+|ing|e[dr])?\b/i, reason: "Profanity" },
+  { pattern: /\bsh[i1]t(?:\s+|ting|head)?\b/i, reason: "Profanity" },
+  { pattern: /\bb[i1]tch(?:\s+|ing|es|ass)?\b/i, reason: "Profanity" },
+  { pattern: /\bd[a4]mn?\b/i, reason: "Profanity" },
+  { pattern: /\b[a4]ss(?:hole|hat|wipe)?\b/i, reason: "Profanity" },
+  { pattern: /\bb[a4]st[a4]rd\b/i, reason: "Profanity" },
+  { pattern: /\bcr[a4]p\b/i, reason: "Profanity" },
+  { pattern: /\bd[i1]ck(?:\s+|head)?\b/i, reason: "Profanity" },
+  { pattern: /\bp[i1]ss\b/i, reason: "Profanity" },
+  { pattern: /\bsl[u4]t\b/i, reason: "Profanity" },
+  { pattern: /\bwh[o0]r[e3]\b/i, reason: "Profanity" },
+  { pattern: /\bc[u4]nt\b/i, reason: "Profanity" },
+
+  // ── Racial slurs and racial rhetoric ──
+  { pattern: /\bn[i1]gg[ae3]r\b/i, reason: "Racial slur" },
+  { pattern: /\bsp[i1]c\b/i, reason: "Racial slur" },
+  { pattern: /\bch[i1]nk\b/i, reason: "Racial slur" },
+  { pattern: /\bg[o0][o0]k\b/i, reason: "Racial slur" },
+  { pattern: /\bw[o0]p\b/i, reason: "Ethnic slur" },
+  { pattern: /\bm[a4]ng[i1]n[a4]?\b/i, reason: "Racial slur" },
+  { pattern: /\bs[a4]nd n[i1]gg[e3]r\b/i, reason: "Racial slur" },
+  { pattern: /\bt[a4]r[b4]aby[a4]?\b/i, reason: "Racial slur" },
+  { pattern: /\b(?:bl[a4]ck|wh[i1]t[e3])\s+(?:sup[r4]em[a4]cy|m[a4]st[e3]r\s+r[a4]c[e3])\b/i, reason: "Racial supremacy" },
+  { pattern: /\b(?:wh[i1]t[e3]\s+)?(?:sup[r4]em[a4]cist|n[a4]t[i1][o0]n[a4]l[i1]st\s+fr[o0]nt)\b/i, reason: "White supremacist ideology" },
+  { pattern: /\bwh[i1]t[e3] sh[a4]v[e3]\b/i, reason: "White supremacist term" },
+  { pattern: /\b[o0]verb[e3]r\b/i, reason: "White supremacist term" },
+  { pattern: /\b[r4][e3]p[l4][a4]c[e3]ment th[e3][o0]ry\b/i, reason: "White supremacist conspiracy" },
+  { pattern: /\b(?:bl[a4]ck\s+on\s+wh[i1]t[e3]|wh[i1]t[e3]\s+on\s+bl[a4]ck)\s+(?:cr[i1]m[e3]|viol[e3]nc[e3])\b/i, reason: "Racial incitement" },
+  { pattern: /\b(?:g[a4]ng\s+st[a4]lk|r[a4]c[i1]al\s+pur[i1]ty)\b/i, reason: "Racist rhetoric" },
+  { pattern: /\b(?:bl[a4]ck|wh[i1]t[e3]|j[e3]w|musl[i1]m)\s+(?:gen[o0]c[i1]d[e3]|r[a4]c[e3]\s+w[a4]r)\b/i, reason: "Racial incitement" },
+  { pattern: /\b(?:bl[a4]cks?|wh[i1]t[e3]s?|j[e3]ws?)\s+(?:ar[e3]|should)\s+(?:inf[e3]ri[o0]r|sup[e3]ri[o0]r)\b/i, reason: "Racial supremacy" },
+  { pattern: /\b(?:r[a4]c[e3]|c[o0]l[o0]r)\s+(?:w[a4]r|tr[a4]it[o0]r)\b/i, reason: "Racial incitement" },
+  { pattern: /\b(?:bl[a4]ckf[a4]c[e3]|wh[i1]t[e3]f[a4]c[e3])\s+is\s+(?:g[o0][o0]d|b[e3]st|right)\b/i, reason: "Racist rhetoric" },
+
+  // ── Homophobic / transphobic / LGBTQ+ hate ──
+  { pattern: /\bf[a4]gg[o0]t\b/i, reason: "Homophobic slur" },
+  { pattern: /\btr[a4]nn[y5]\b/i, reason: "Transphobic slur" },
+  { pattern: /\bh[o0]m[o0]l[i1]b[e3]r[a4]l\b/i, reason: "Homophobic slur" },
+  { pattern: /\b(?:g[a4]y|h[o0]m[o0]|l[e3]sb[i1]an)\s+(?:sh[o0]uld\s+b[e3]\s+kill[e3]d|is\s+a\s+sin|ar[e3]\s+disgusting)\b/i, reason: "Homophobic hate" },
+  { pattern: /\btr[a4]nsg[e3]nd[e3]r\s+(?:is\s+a\s+dis[o0]rd[e3]r|sh[o0]uld\s+b[e3]\s+b[a4]nn[e3]d|is\s+n[a4]tural\s+s[e3]l[e3]ct[i1][o0]n)\b/i, reason: "Transphobic rhetoric" },
+  { pattern: /\b(?:pr[i1]d[e3]|lgbt[q+]?)\s+(?:is\s+a\s+dis[e3]as[e3]|sh[o0]uld\s+b[e3]\s+il[l4]eg[a4]l)\b/i, reason: "Anti-LGBTQ+ hate" },
+
+  // ── Ableist slurs ──
+  { pattern: /\br[e3]t[a4]rd[e3]d?\b/i, reason: "Ableist slur" },
+  { pattern: /\bsp[a4]z\b/i, reason: "Ableist slur" },
+  { pattern: /\bm[i1]dget\b/i, reason: "Ableist slur" },
+  { pattern: /\bcripple?\b/i, reason: "Ableist slur" },
+
+  // ── Religious hate ──
+  { pattern: /\bk[i1]k[e3]\b/i, reason: "Religious slur" },
+  { pattern: /\br[a4]g[h4][e3]ad\b/i, reason: "Religious slur" },
+  { pattern: /\b[j4]ew\s(?:c[o0]ntr[o0]l|m[o0]ney|l[i1]e|run\s+(?:the\s+)?w[o0]rld|c[o0]nspr[i1]cy)\b/i, reason: "Antisemitic stereotype" },
+  { pattern: /\b(?:j[e3]w|j[e3]ws)\s+(?:ar[e3]|should)\s+(?:b[a4]nn[e3]d|kill[e3]d|d[e3]p[o0]rt[e3]d)\b/i, reason: "Antisemitic hate" },
+  { pattern: /\b(?:h[o0]l[o0]caust|sh[o0][a4]h)\s+(?:h[o0][a4]x|l[i1]e|f[a4]k[e3]|m[a4]d[e3] up)\b/i, reason: "Holocaust denial" },
+  { pattern: /\b(?:h[i1]tl[e3]r|n[a4]z[i1])\s+(?:was\s+right|did\s+nothing\s+wrong|sh[o0]uld\s+h[a4]v[e3])\b/i, reason: "Nazi apologia" },
+  { pattern: /\bislam(?:ic|ist)?\s+(?:is\s+a\s+dis[e3]as[e3]|sh[o0]uld\s+b[e3]\s+b[a4]nn[e3]d|is\s+e[a4]sily\s+rad[i1]c[a4]l[i1]z[e3]d)\b/i, reason: "Islamophobic rhetoric" },
+  { pattern: /\bm[u4]sl[i1]m\s+(?:r[a4]t|p[i1]g|d[o0]g|scr[u4]b)\b/i, reason: "Islamophobic slur" },
+  { pattern: /\bch[r4]ist[i1][a4]n\s+(?:sh[o0]uld\s+b[e3]\s+kill[e3]d|ar[e3]\s+inf[e3]ri[o0]r)\b/i, reason: "Religious hate" },
+
+  // ── Xenophobia / anti-immigration hate ──
+  { pattern: /\b(?:fill[i1]ng?\s+up|inv[a4]d[i1]ng|t[a4]k[i1]ng\s+[o0]v[e3]r)\s+(?:the|our)\s+(?:country|nation|l[a4]nd|j[o0]bs)\b/i, reason: "Xenophobic rhetoric" },
+  { pattern: /\b(?:send\s+them\s+b[a4]ck|d[e3]p[o0]rt\s+(?:them|them\s+all|il[l4]eg[a4]ls))\b/i, reason: "Xenophobic hate" },
+  { pattern: /\b(?:il[l4]eg[a4]l\s+immigr[a4]nt|il[l4]eg[a4]l\s+ali[e3]n)\s+(?:cr[i1]m[e3]|r[a4]p[i1]st|kill[e3]r|th[i1]ng)\b/i, reason: "Xenophobic stereotype" },
+  { pattern: /\b(?:immigr[a4]nts?|r[e3]fug[e3]es?)\s+(?:ar[e3]|should)\s+(?:inv[a4]d[i1]ng|criminals?|r[a4]pists?)\b/i, reason: "Xenophobic hate" },
+  { pattern: /\b(?:g[o0][o0]k|ch[i1]nk|c[o0][o0]li[e3])\s+(?:g[o0]t\s+t[a4]\s+g[o0]|sh[o0]uld\s+l[e3]av[e3])\b/i, reason: "Xenophobic hate" },
+
+  // ── Propaganda / extremism / radicalization ──
+  { pattern: /\b(?:exterminat|eliminat|eradicat|wip[e3]\s?out)\s+(?:all|every|the|these|those)\b/i, reason: "Genocidal rhetoric" },
+  { pattern: /\bkill\s+(?:all|every|those|the|these)\b/i, reason: "Violent extremism" },
+  { pattern: /\b(?:d[i1]e|k[i1]ll)\s+y[o0]urs[e3]lf\b/i, reason: "Self-harm encouragement" },
+  { pattern: /\by[o0]u\s+sh[o0]uld\s+(?:b[e3]\s+)?k[i1]ll\b/i, reason: "Threat" },
+  { pattern: /\bi\s+(?:w[i1]ll|w[o0]n['']t\s+st[o0]p)\s+(?:k[i1]ll|hurt|d[i1]e|f[i1]nd|h[u4]nt)\b/i, reason: "Threat" },
+  { pattern: /\b(?:h[a4]ng|lynch)\s+(?:'em|them|all|every|the)\b/i, reason: "Lynching threat" },
+  { pattern: /\bsubhuman\b/i, reason: "Dehumanizing propaganda" },
+  { pattern: /\b(?:inf[e3]ri[o0]r\s+(?:race|breed|p[e3][o0]pl[e3]))\b/i, reason: "Dehumanizing propaganda" },
+  { pattern: /\b(?:r[a4]c[i1]al\s+pur[i1]ty|bl[o0][o0]d\s+pur[i1]ty|br[e3]ed\s+pur[i1]ty)\b/i, reason: "Eugenics rhetoric" },
+  { pattern: /\b(?:g[e3]rm[a4]n|m[a4]st[e3]r)\s+r[a4]c[e3]\b/i, reason: "Nazi ideology" },
+  { pattern: /\b(?:14\s+w[o0]rds|h[a4]il\s+h[i1]tl[e3]r|88\s+pr[e3]c[e3]pts)\b/i, reason: "White supremacist code" },
+  { pattern: /\b(?:h[e3]il|s[i1][e3]g)\s+(?:h[i1]tl[e3]r|tr[u4]mp)\b/i, reason: "Extremist rhetoric" },
+  { pattern: /\b(?:wr[a4]th\s+of\s+g[o0]d|divin[e3]\s+p[u4]nishm[e4]nt)\s+(?:up[o0]n|f[o0]r|a[a4]g[a4]inst)\b/i, reason: "Religious extremism" },
+  { pattern: /\b(?:j[i1]h[a4]d|h[o0]ly\s+w[a4]r)\s+(?:is\s+|up[o0]n|call\s+f[o0]r)\b/i, reason: "Extremist rhetoric" },
+  { pattern: /\b(?:r[e3]v[o0]l[u4]t[i1][o0]n|c[i1]v[i1]l\s+w[a4]r)\s+(?:n[o0]w|is\s+c[o0]ming|c[a4]ll\s+f[o0]r)\b/i, reason: "Incitement to violence" },
+  { pattern: /\b(?:t[a4]k[e3]\s+up\s+[a4]rms|arm\s+y[o0]urs[e3]lv[e3]s)\b/i, reason: "Incitement to violence" },
+  { pattern: /\b(?:el[i1]t[e3]|gl[o0]b[a4]l[i1]st)\s+(?:p[e3]d[o0]ph[i1]l[e3]|s[a4]t[a4]n[i1]st|c[a4]b[a4]l)\b/i, reason: "Conspiracy propaganda" },
+  { pattern: /\b(?:n[e3]w\s+w[o0]rld\s+[o0]rd[e3]r|gr[e3][a4]t\s+r[e3]s[e3]t)\b/i, reason: "Conspiracy propaganda" },
+  { pattern: /\b(?:wh[i1]t[e3]\s+gen[o0]c[i1]d[e3]|r[e3]pl[a4]c[e3]m[e3]nt)\b/i, reason: "White supremacist propaganda" },
+  { pattern: /\b(?:m[a4]ss\s+immigr[a4]t[i1][o0]n|immigr[a4]t[i1][o0]n\s+inv[a4]s[i1][o0]n)\b/i, reason: "Anti-immigration propaganda" },
+  { pattern: /\b(?:[a4]nt[i1][a4]-[a4]ll\s+|[a4]ll\s+[a4]r[e3]\s+)\s*(?:wh[i1]t[e3]|bl[a4]ck|j[e3]w|musl[i1]m|g[a4]y)s?\s+(?:ar[e3]|should)\b/i, reason: "Hate propaganda" },
+
+  // ── Discrimination against women / sexism ──
+  { pattern: /\b(?:w[o0]m[a4]n|w[o0]m[e3]n|g[i1]rl)\s+(?:sh[o0]uld\s+kn[o0]w\s+th[e3]ir\s+pl[a4]c[e3]|ar[e3]\s+inf[e3]ri[o0]r)\b/i, reason: "Sexist discrimination" },
+  { pattern: /\b(?:f[e3]m[i1]n[i1]st|w[o0]m[e3]n['']s\s+r[i1]ghts)\s+(?:ar[e3]\s+stup[i1]d|sh[o0]uld\s+b[e3]\s+b[a4]nn[e3]d|g[o0][o0]n[e3]\s+cr[a4]zy)\b/i, reason: "Sexist hate" },
+  { pattern: /\b(?:k[i1]ll|b[e3][a4]t|r[a4]p[e3])\s+(?:w[o0]m[e3]n?)\b/i, reason: "Violence against women" },
+  { pattern: /\b(?:sl[u4]t|wh[o0]r[e3])\s+sh[a4]m[i1]ng\b/i, reason: "Misogynistic rhetoric" },
+  { pattern: /\br[a4]p[e3]\s+(?:is\s+not\s+that\s+b[a4]d|sh[o0]uld\s+b[e3]\s+l[e3]g[a4]l|w[a4]s\s+h[e3]r\s+f[a4]ult)\b/i, reason: "Rape apologia" },
+  { pattern: /\b(?:w[o0]m[e3]n\s+ar[e3]\s+pr[o0]p[e3]rty|w[o0]m[e3]n\s+b[e3]l[o0]ng\s+in\s+th[e3]\s+k[i1]tch[e3]n)\b/i, reason: "Sexist discrimination" },
+
+  // ── Violence / threats / incitement ──
+  { pattern: /\b(?:i['']?ll|i\s+will)\s+(?:kill|murder|slaughter)\s+(?:you|your|y[a4]ll)\b/i, reason: "Death threat" },
+  { pattern: /\b(?:i['']?ll|i\s+will)\s+(?:find|hunt|track)\s+(?:you|y[a4]ll)\s+(?:down|and\s+kill)\b/i, reason: "Death threat" },
+  { pattern: /\b(?:y[o0]u\s+ar[e3]\s+(?:g[o0]ing\s+t[o0]|g[o0]nn[a4])|y[o0]u['']?r[e3]e?)\s+(?:d[i1]e|g[e3]t\s+killed)\b/i, reason: "Threat" },
+  { pattern: /\b(?:b[o0]mb|sh[o0][o0]t)\s+(?:up|the\s+place|a\s+sch[o0][o0]l|a\s+ch[u4]rch)\b/i, reason: "Violent threat" },
+  { pattern: /\b(?:i\s+h[o0]p[e3]\s+y[o0]u\s+d[i1]e|y[o0]u\s+sh[o0]uld\s+d[i1]e|r[o0]tt[i1]n\s+in\s+h[e3]ll)\b/i, reason: "Death wish" },
+];
+
+function flagToxicContent(chunks) {
+  const flagged = [];
+  chunks.forEach((chunk) => {
+    const text = chunk.text;
+    for (const { pattern, reason } of TOXIC_PATTERNS) {
+      if (pattern.test(text)) {
+        flagged.push({ start: chunk.start, text: chunk.text, reason });
+        break;
+      }
+    }
+  });
+  return flagged;
+}
+
+async function fetchYouTubeTranscript(videoId, signal) {
+  const userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36";
+  // 1) Fetch the watch page to extract the Innertube API key
+  const pageResponse = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
+    signal,
+    headers: { "User-Agent": userAgent, "Accept-Language": "en-US,en;q=0.9" }
+  });
+  const html = await pageResponse.text();
+  if (html.includes('class="g-recaptcha"')) throw new Error("YouTube is rate-limiting requests.");
+
+  // 2) Extract Innertube API key from the page
+  const apiKeyMatch = html.match(/"INNERTUBE_API_KEY":"([^"]+)"/);
+  if (!apiKeyMatch) throw new Error("Could not extract API key from YouTube page.");
+
+  // 3) Also extract video title and channel from page
+  const title = getMeta(html, "og:title") || getTitle(html);
+  const channelMatch = html.match(/"ownerChannelName"\s*:\s*"([^"]+)"/);
+  const channel = channelMatch ? decodeHtml(channelMatch[1]) : "";
+
+  // 4) Call Innertube player as ANDROID client to retrieve captionTracks
+  const playerRes = await fetch(`https://www.youtube.com/youtubei/v1/player?key=${apiKeyMatch[1]}`, {
+    method: "POST",
+    signal,
+    headers: { "Content-Type": "application/json", "User-Agent": userAgent },
+    body: JSON.stringify({
+      context: { client: { clientName: "ANDROID", clientVersion: "20.10.38" } },
+      videoId
+    })
+  });
+  if (!playerRes.ok) throw new Error("Failed to retrieve player data.");
+  const playerJson = await playerRes.json();
+  const tracks = playerJson?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (!tracks || !tracks.length) throw new Error("No captions available for this video.");
+
+  // 5) Pick the best track (prefer English)
+  const track = tracks.find((t) => t.languageCode === "en" || t.languageCode?.startsWith("en")) || tracks[0];
+  const baseUrl = track.baseUrl || track.url;
+  if (!baseUrl) throw new Error("No caption track URL found.");
+
+  // 6) Fetch the transcript XML
+  const transcriptUrl = baseUrl.replace(/&fmt=[^&]+/, "");
+  const captionsResponse = await fetch(transcriptUrl, { signal, headers: { "User-Agent": userAgent } });
+  if (!captionsResponse.ok) throw new Error(`Failed to fetch captions (HTTP ${captionsResponse.status}).`);
+  const xml = await captionsResponse.text();
+
+  // 7) Parse XML
+  const segments = [];
+  const textPattern = /<text\s+start="([\d.]+)"[^>]*dur="([\d.]+)"[^>]*>([\s\S]*?)<\/text>/gi;
+  let match;
+  while ((match = textPattern.exec(xml)) !== null) {
+    const text = decodeHtml(match[3].replace(/\n/g, " ").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim());
+    if (text) segments.push({ text, start: Number(match[1]) || 0, duration: Number(match[2]) || 0 });
+  }
+  if (!segments.length) throw new Error("No caption text could be extracted.");
+  return { segments, title, channel };
+}
+
+async function handleYouTubeTranscript(req, res) {
+  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  const target = requestUrl.searchParams.get("url") || requestUrl.searchParams.get("target");
+  if (!target) {
+    sendJson(res, 400, { ok: false, error: "A YouTube video URL is required." });
+    return;
+  }
+  const videoId = extractVideoId(target);
+  if (!videoId) {
+    sendJson(res, 400, { ok: false, error: "Invalid YouTube video URL. Could not extract video ID." });
+    return;
+  }
+  const connection = await checkInternetConnection();
+  if (!connection.online) {
+    sendJson(res, 503, { ok: false, videoId, error: "Internet connection is required." });
+    return;
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20000);
+  try {
+    const { segments, title, channel } = await fetchYouTubeTranscript(videoId, controller.signal);
+    const info = { title, channel };
+    const chunks = chunkTranscript(segments);
+    const flaggedSegments = flagToxicContent(chunks);
+    const fullText = segments.map((s) => s.text).join(" ").replace(/\s+/g, " ").trim();
+    const report = buildTranscriptReport(videoId, info, chunks, flaggedSegments);
+    sendJson(res, 200, {
+      ok: true,
+      videoId,
+      title: info.title,
+      channel: info.channel,
+      segmentCount: segments.length,
+      chunkCount: chunks.length,
+      wordCount: fullText ? fullText.split(/\s+/).length : 0,
+      chunks,
+      flaggedSegments,
+      fullText,
+      report
+    });
+  } catch (error) {
+    sendJson(res, 200, {
+      ok: false,
+      videoId,
+      error: error.name === "AbortError" ? "The transcript request timed out." : error.message
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function fetchPublicWebPage(rawUrl, signal, redirectCount = 0) {
   const target = await assertPublicWebUrl(rawUrl);
   const response = await fetch(target, {
@@ -588,6 +902,11 @@ async function handleWebGrab(req, res) {
 const server = http.createServer((req, res) => {
   if (req.method === "GET" && req.url.startsWith("/api/connection")) {
     handleConnectionCheck(req, res);
+    return;
+  }
+
+  if (req.method === "GET" && req.url.startsWith("/api/youtube/transcript")) {
+    handleYouTubeTranscript(req, res);
     return;
   }
 
