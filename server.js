@@ -1392,6 +1392,101 @@ async function handleImageUpload(req, res) {
   } catch { sendJson(res, 500, { ok: false, error: "Image upload failed." }); }
 }
 
+function proxyErrorPage(msg, originalUrl) {
+  const safe = encodeURI(originalUrl || "");
+  return `<!DOCTYPE html><meta charset="utf-8"><title>Could not load page</title>
+<body style="margin:30px;font-family:sans-serif;background:#111;color:#eee">
+<h2 style="margin-top:0">Could not load page</h2>
+<p style="color:#999">${msg}</p>
+<p><a href="${safe}" target="_blank" style="color:#88ccff">Open in browser &rarr;</a></p>
+</body>`;
+}
+
+async function handleProxy(req, res) {
+  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  const target = requestUrl.searchParams.get("url");
+  const rawTarget = target;
+
+  if (!target) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(proxyErrorPage("No URL provided."));
+    return;
+  }
+
+  let validatedUrl;
+  try {
+    validatedUrl = await assertPublicWebUrl(target);
+  } catch (err) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(proxyErrorPage(err.message, rawTarget));
+    return;
+  }
+
+  const connection = await checkInternetConnection();
+  if (!connection.online) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(proxyErrorPage("Internet connection is required.", rawTarget));
+    return;
+  }
+
+  try {
+    const response = await fetch(validatedUrl, {
+      redirect: "follow",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9"
+      }
+    });
+
+    const contentType = response.headers.get("content-type") || "text/html";
+    const body = await response.text();
+
+    res.writeHead(200, {
+      "Content-Type": contentType,
+      "Cache-Control": "no-store"
+    });
+    res.end(body);
+  } catch (err) {
+    res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+    res.end(proxyErrorPage(err.message, rawTarget));
+  }
+}
+
+async function handleEmbed(req, res) {
+  const requestUrl = new URL(req.url, `http://${req.headers.host}`);
+  const target = requestUrl.searchParams.get("url");
+  if (!target) { res.writeHead(400); res.end("Missing url"); return; }
+
+  let validatedUrl;
+  try { validatedUrl = await assertPublicWebUrl(target); }
+  catch { res.writeHead(400); res.end("Invalid URL"); return; }
+
+  // Serve a wrapper page that tries to embed the target directly in an iframe
+  const safe = validatedUrl.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Embedded</title>
+<style>body{margin:0;background:#111;display:flex;flex-direction:column;height:100vh}
+iframe{flex:1;border:none;width:100%}
+.fallback{display:none;padding:30px;font-family:sans-serif;color:#eee;text-align:center}
+.fallback a{color:#88ccff}</style></head>
+<body>
+<iframe id="f" src="${safe}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+<div class="fallback" id="fb">
+<h2>Blocked</h2><p>This site can't be embedded directly.</p>
+<p><a href="${safe}" target="_blank">Open in browser &rarr;</a></p>
+</div>
+<script>
+var f=document.getElementById("f");
+var fb=document.getElementById("fb");
+var loaded=false;
+f.onload=function(){try{var doc=f.contentDocument||f.contentWindow.document;if(doc.body&&doc.body.innerHTML.length>0)loaded=true}catch(e){}setTimeout(function(){if(!loaded){f.style.display="none";fb.style.display="block"}},500)};
+f.onerror=function(){f.style.display="none";fb.style.display="block"};
+setTimeout(function(){if(!loaded){f.style.display="none";fb.style.display="block"}},3000);
+</script></body></html>`;
+  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  res.end(html);
+}
+
 const server = http.createServer((req, res) => {
   // CORS headers for images served to search engines
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -1429,6 +1524,16 @@ const server = http.createServer((req, res) => {
 
   if (req.method === "POST" && req.url.startsWith("/api/grab")) {
     handleWebGrab(req, res);
+    return;
+  }
+
+  if (req.method === "GET" && req.url.startsWith("/api/embed")) {
+    handleEmbed(req, res);
+    return;
+  }
+
+  if (req.method === "GET" && req.url.startsWith("/api/proxy")) {
+    handleProxy(req, res);
     return;
   }
 

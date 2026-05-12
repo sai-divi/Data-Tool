@@ -1,7 +1,7 @@
 const state = {
-  uploadedImage: null,
+  uploadedImages: [],
   lastResult: createEmptyResult(),
-  activeMode: "web",
+  activeMode: "osint",
   connection: {
     online: false,
     checkedAt: null
@@ -257,19 +257,29 @@ const platformProfiles = {
 
 const elements = {
   modeButtons: document.querySelectorAll(".mode-button"),
-  webGrabPanel: document.querySelector("#webGrabPanel"),
   osintPanel: document.querySelector("#osintPanel"),
+  imagePanel: document.querySelector("#imagePanel"),
   transcriptPanel: document.querySelector("#transcriptPanel"),
   transcriptInput: document.querySelector("#transcriptInput"),
-  webInput: document.querySelector("#webInput"),
 
   rawInput: document.querySelector("#rawInput"),
   imageInput: document.querySelector("#imageInput"),
   dropZone: document.querySelector("#dropZone"),
   ocrButton: document.querySelector("#ocrButton"),
   previewWrap: document.querySelector("#previewWrap"),
-  imagePreview: document.querySelector("#imagePreview"),
 
+  imageGrid: document.querySelector("#imageGrid"),
+
+  searchOverlay: document.querySelector("#searchOverlay"),
+
+  searchFrame: document.querySelector("#searchFrame"),
+
+  searchOverlayTitle: document.querySelector("#searchOverlayTitle"),
+
+  closeSearchOverlay: document.querySelector("#closeSearchOverlay"),
+
+  openInBrowser: document.querySelector("#openInBrowser"),
+  themeToggle: document.querySelector("#themeToggle"),
   statusBox: document.querySelector("#statusBox"),
   runButton: document.querySelector("#runButton"),
   clearButton: document.querySelector("#clearButton"),
@@ -311,7 +321,14 @@ function bindTabs() {
 function bindInputs() {
   elements.runButton.addEventListener("click", runCurrentMode);
   elements.clearButton.addEventListener("click", resetWorkspace);
-  elements.ocrButton.addEventListener("click", runOcr);
+
+  elements.closeSearchOverlay.addEventListener("click", closeSearchOverlay);
+
+  // Theme toggle
+  const savedTheme = localStorage.getItem("data-tool-theme");
+  if (savedTheme === "dark") document.documentElement.classList.add("dark");
+  elements.themeToggle.addEventListener("click", toggleTheme);
+  elements.ocrButton.addEventListener("click", runImageOcr);
   const imgSearchBtn = document.querySelector("#imageSearchButton");
   const faceSearchBtn = document.querySelector("#faceSearchButton");
   if (imgSearchBtn) imgSearchBtn.addEventListener("click", () => runImageSearch("google"));
@@ -330,8 +347,8 @@ function bindInputs() {
   });
 
   elements.imageInput.addEventListener("change", (event) => {
-    const [file] = event.target.files;
-    if (file) setUploadedImage(file);
+    const files = Array.from(event.target.files).filter(f => f.type.startsWith("image/"));
+    if (files.length) setUploadedImages(files);
   });
 
   ["dragenter", "dragover"].forEach((eventName) => {
@@ -349,20 +366,25 @@ function bindInputs() {
   });
 
   elements.dropZone.addEventListener("drop", (event) => {
-    const [file] = event.dataTransfer.files;
-    if (file && file.type.startsWith("image/")) setUploadedImage(file);
+    const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+    if (files.length) setUploadedImages(files);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !elements.searchOverlay.classList.contains("hidden")) {
+      closeSearchOverlay();
+    }
   });
 }
 
 function setMode(mode) {
   state.activeMode = mode;
   elements.modeButtons.forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
-  elements.webGrabPanel.classList.toggle("hidden", mode !== "web");
   elements.osintPanel.classList.toggle("hidden", mode !== "osint");
+  elements.imagePanel.classList.toggle("hidden", mode !== "image");
   elements.transcriptPanel.classList.toggle("hidden", mode !== "transcript");
-  elements.runButton.lastChild.textContent = " Run";
-  if (mode === "web") setStatus("Paste website links above and click Run.");
-  else if (mode === "transcript") setStatus("Paste a YouTube link above and click Run.");
+  if (mode === "transcript") setStatus("Paste a YouTube link above and click Run.");
+  else if (mode === "image") setStatus("Drop photos above. OCR shows results here, Image/Face Search opens in-app.");
   else setStatus("Paste names or links above and click Run.");
 }
 
@@ -410,91 +432,17 @@ function createEmptyResult() {
 }
 
 async function runCurrentMode() {
-  if (state.activeMode === "web") {
-    await runWebGrab();
-    return;
-  }
-
   if (state.activeMode === "transcript") {
     await runYouTubeTranscript();
     return;
   }
 
+  if (state.activeMode === "image") {
+    await runImageOcr();
+    return;
+  }
+
   await runOsintCollection();
-}
-
-async function runWebGrab() {
-  const rawText = elements.webInput.value.trim();
-  if (!rawText) {
-    setStatus("Add at least one website link.", "warn");
-    return;
-  }
-
-  const result = createEmptyResult();
-  result.rawText = rawText;
-  result.mode = "web";
-
-  const urls = extractUrls(rawText);
-  if (!urls.length) {
-    rawText
-      .split(/\n+/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .slice(0, 6)
-      .forEach((query) => {
-        addSource(result, {
-          title: `Web search: ${query}`,
-          url: `https://www.google.com/search?q=${encodeURIComponent(query)}`,
-          kind: "Search",
-          target: query,
-          checked: true
-        });
-      });
-    addFlag(result, "warn", "No links found. Search results created instead.");
-    addBaselineFlags(result);
-    result.summary = buildSummary(result);
-    result.report = buildReport(result);
-    state.lastResult = result;
-    renderResult(result);
-    setStatus("Created search results. Add website links to get page content.", "warn");
-    return;
-  }
-
-  const canCollectOnline = await ensureOnlineConnection();
-  if (!canCollectOnline) {
-    setStatus("Need internet to get pages.", "warn");
-    return;
-  }
-
-  setStatus("Getting website content...");
-
-  try {
-    const response = await fetch("/api/grab", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ urls })
-    });
-    const payload = await response.json();
-
-    const grabbedPages = payload.results || [];
-    const failures = payload.failures || [];
-
-    grabbedPages.forEach((page) => addWebPageFinding(result, page));
-    failures.forEach((failure) => addFlag(result, "warn", `${failure.url}: ${failure.error}`));
-    if (!grabbedPages.length && payload.error) {
-      addFlag(result, "warn", payload.error);
-    }
-
-    addBaselineFlags(result);
-    result.summary = buildSummary(result);
-    result.report = buildReport(result);
-    state.lastResult = result;
-    renderResult(result);
-
-    setStatus(`Got ${grabbedPages.length} page${grabbedPages.length === 1 ? "" : "s"}.`);
-  } catch {
-    setStatus("Failed to get pages.", "warn");
-  }
 }
 
 function addWebPageFinding(result, page) {
@@ -643,8 +591,8 @@ async function runYouTubeTranscript() {
 
 async function runOsintCollection() {
   const rawText = elements.rawInput.value.trim();
-  if (!rawText && !state.uploadedImage) {
-    setStatus("Paste a name, link, or photo first.", "warn");
+  if (!rawText) {
+    setStatus("Paste a name, link, or text first.", "warn");
     return;
   }
 
@@ -654,6 +602,25 @@ async function runOsintCollection() {
   renderResult(result);
 
   const canCollectOnline = await ensureOnlineConnection();
+
+  // Grab webpage content for any URLs found
+  if (canCollectOnline) {
+    const urls = extractUrls(rawText).slice(0, 8);
+    if (urls.length) {
+      setStatus("Getting page content...");
+      try {
+        const resp = await fetch("/api/grab", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls })
+        });
+        const data = await resp.json();
+        (data.results || []).forEach((page) => addWebPageFinding(result, page));
+        (data.failures || []).forEach((f) => addFlag(result, "warn", `${f.url}: ${f.error}`));
+      } catch {}
+    }
+  }
+
   if (canCollectOnline) {
     await enrichYouTubeFindings(result);
     await enrichPublicSourceMetadata(result);
@@ -1796,7 +1763,7 @@ function renderSources(sources) {
           </div>
           <p>${escapeHtml(source.kind)} - ${escapeHtml(source.target)}</p>
         </div>
-        <button class="ghost-button compact" type="button" data-open-url="${escapeAttribute(source.url)}">
+        <button class="ghost-button compact" type="button" data-open-url="${escapeAttribute(source.url)}" data-label="${escapeAttribute(source.title)}">
           <i data-lucide="external-link"></i>
           Open
         </button>
@@ -1806,7 +1773,10 @@ function renderSources(sources) {
     .join("");
 
   elements.sourceList.querySelectorAll("[data-open-url]").forEach((button) => {
-    button.addEventListener("click", () => window.open(button.dataset.openUrl, "_blank", "noreferrer"));
+    button.addEventListener("click", () => {
+      const label = button.dataset.label || button.dataset.openUrl;
+      openSearchOverlay(`/api/proxy?url=${encodeURIComponent(button.dataset.openUrl)}`, label);
+    });
   });
 
   elements.sourceList.querySelectorAll("[data-source-id]").forEach((checkbox) => {
@@ -1896,35 +1866,52 @@ function renderTranscript(transcriptResult) {
   container.innerHTML = html || `<div class="empty-state">Nothing in transcript.</div>`;
 }
 
-async function runOcr() {
-  if (!state.uploadedImage) {
-    setStatus("Choose a screenshot first.", "warn");
+async function runImageOcr() {
+  if (!state.uploadedImages.length) {
+    setStatus("Choose a photo first.", "warn");
     return;
   }
 
-  setStatus("Loading OCR engine...");
+  setStatus("Reading text from photos...");
   elements.ocrButton.disabled = true;
 
   try {
     await ensureTesseract();
-    setStatus("Reading screenshot text locally...");
-    const result = await Tesseract.recognize(state.uploadedImage, "eng", {
-      logger: (message) => {
-        if (message.status === "recognizing text") {
-          setStatus(`OCR ${Math.round((message.progress || 0) * 100)}%...`);
+    const allText = [];
+    for (let i = 0; i < state.uploadedImages.length; i++) {
+      const file = state.uploadedImages[i];
+      setStatus(`Reading photo ${i + 1} of ${state.uploadedImages.length}...`);
+      const result = await Tesseract.recognize(file, "eng", {
+        logger: (message) => {
+          if (message.status === "recognizing text") {
+            setStatus(`Photo ${i + 1}: ${Math.round((message.progress || 0) * 100)}%...`);
+          }
         }
-      }
-    });
+      });
+      const text = result?.data?.text?.trim();
+      if (text) allText.push(`[${file.name}]\n${text}`);
+    }
 
-    const text = result?.data?.text?.trim();
-    if (text) {
-      elements.rawInput.value = [elements.rawInput.value.trim(), text].filter(Boolean).join("\n\n");
-      setStatus("Text from photo added.");
+    const combined = allText.join("\n\n");
+    if (combined) {
+      const ocrResult = createEmptyResult();
+      ocrResult.rawText = combined;
+      addFinding(ocrResult, {
+        type: "Text from photos",
+        value: combined.slice(0, 300),
+        confidence: "medium",
+        source: "OCR",
+        notes: combined.length > 300 ? combined.slice(0, 3000) : combined,
+        tags: ["ocr", "image"]
+      });
+      state.lastResult = ocrResult;
+      renderResult(ocrResult);
+      setStatus(`Text read from ${state.uploadedImages.length} photo(s).`);
     } else {
-      setStatus("No text found in photo.", "warn");
+      setStatus("No text found in photos.", "warn");
     }
   } catch {
-    setStatus("Could not read photo text. Try pasting it manually.", "warn");
+    setStatus("Could not read photo text.", "warn");
   } finally {
     elements.ocrButton.disabled = false;
   }
@@ -1943,19 +1930,29 @@ function ensureTesseract() {
   });
 }
 
-function setUploadedImage(file) {
-  state.uploadedImage = file;
-  elements.imagePreview.src = URL.createObjectURL(file);
+function setUploadedImages(files) {
+  state.uploadedImages = files;
+  elements.imageGrid.innerHTML = "";
+  files.forEach((f) => {
+    const img = document.createElement("img");
+    img.src = URL.createObjectURL(f);
+    img.style.cssText = "width:120px;height:90px;object-fit:cover;border:1px solid #333;border-radius:4px";
+    img.title = f.name;
+    elements.imageGrid.appendChild(img);
+  });
   elements.previewWrap.classList.remove("hidden");
   const fn = document.querySelector("#imageFileName");
-  if (fn) fn.textContent = file.name;
+  if (fn) fn.textContent = files.length === 1 ? files[0].name : `${files.length} photos selected`;
   const actions = document.querySelector("#imageActions");
   if (actions) actions.style.display = "flex";
-  setStatus(`Loaded ${file.name}.`);
+  setStatus(`Loaded ${files.length} photo(s).`);
 }
 
 function runImageSearch(mode) {
-  if (!state.uploadedImage) { setStatus("Drop an image first.", "warn"); return; }
+  if (!state.uploadedImages.length) { setStatus("Drop an image first.", "warn"); return; }
+  setStatus(`${mode === "google" ? "Image search" : "Face search"} loading...`);
+
+  const file = state.uploadedImages[0];
   const reader = new FileReader();
   reader.onload = async function (e) {
     const dataUrl = e.target.result;
@@ -1967,13 +1964,15 @@ function runImageSearch(mode) {
       });
       const data = await resp.json();
       if (data.url) {
+        let searchUrl;
         if (mode === "google") {
-          window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(data.url)}`, "_blank");
+          searchUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(data.url)}`;
         } else {
-          window.open(`https://pimeyes.com/en`, "_blank");
-          setTimeout(() => { window.open(`https://www.google.com/searchbyimage?image_url=${encodeURIComponent(data.url)}`, "_blank"); }, 500);
+          searchUrl = `https://www.google.com/searchbyimage?image_url=${encodeURIComponent(data.url)}`;
         }
-        setStatus(`${mode === "google" ? "Image search" : "Face search"} opened.`);
+        openSearchOverlay(`/api/proxy?url=${encodeURIComponent(searchUrl)}`, mode === "google" ? "Google Lens Search" : "Image Search");
+        const count = state.uploadedImages.length;
+        setStatus(`Search opened for ${count} photo(s). Click again for next.`);
       } else {
         setStatus("Upload failed.", "warn");
       }
@@ -1981,7 +1980,72 @@ function runImageSearch(mode) {
       setStatus("Upload failed.", "warn");
     }
   };
-  reader.readAsDataURL(state.uploadedImage);
+  reader.readAsDataURL(file);
+}
+
+let _overlayDirectUrl = "";
+
+function openSearchOverlay(url, title) {
+  elements.searchOverlay.classList.remove("hidden");
+  if (elements.searchOverlayTitle) elements.searchOverlayTitle.textContent = title || "Search Results";
+  _overlayDirectUrl = "";
+
+  // Extract original URL from proxy URL
+  const proxyMatch = url.match(/[?&]url=([^&]+)/);
+  if (proxyMatch) {
+    try { _overlayDirectUrl = decodeURIComponent(proxyMatch[1]); } catch {}
+  }
+
+  // Show/hide "Open in Browser" button
+  if (elements.openInBrowser) {
+    if (_overlayDirectUrl) {
+      elements.openInBrowser.style.display = "";
+      elements.openInBrowser.onclick = () => window.open(_overlayDirectUrl, "_blank", "noreferrer");
+    } else {
+      elements.openInBrowser.style.display = "none";
+    }
+  }
+
+  // Try proxy first, fall back to direct embed if iframe fails
+  let attempt = 0;
+  function tryLoad() {
+    if (attempt === 0) {
+      elements.searchFrame.src = url;
+    } else if (attempt === 1 && _overlayDirectUrl) {
+      elements.searchFrame.src = `/api/embed?url=${encodeURIComponent(_overlayDirectUrl)}`;
+    } else {
+      return;
+    }
+    attempt++;
+  }
+
+  // Detect iframe load failure
+  const onError = () => {
+    if (attempt < 2) setTimeout(tryLoad, 300);
+  };
+
+  elements.searchFrame.onerror = onError;
+  elements.searchFrame.onload = function () {
+    try {
+      const doc = this.contentDocument || this.contentWindow?.document;
+      if (doc && doc.body && doc.body.innerHTML.trim().length < 50 && attempt < 2) {
+        onError();
+      }
+    } catch {
+      // Cross-origin — can't inspect, assume loaded
+    }
+  };
+
+  tryLoad();
+}
+
+function closeSearchOverlay() {
+  elements.searchFrame.src = "";
+  elements.searchFrame.onerror = null;
+  elements.searchFrame.onload = null;
+  _overlayDirectUrl = "";
+  if (elements.openInBrowser) elements.openInBrowser.style.display = "none";
+  elements.searchOverlay.classList.add("hidden");
 }
 
 function copyJson() {
@@ -2020,15 +2084,24 @@ function openCheckedSources() {
 }
 
 function resetWorkspace() {
-  state.uploadedImage = null;
+  state.uploadedImages = [];
   state.lastResult = createEmptyResult();
-  elements.webInput.value = "";
   elements.rawInput.value = "";
   elements.transcriptInput.value = "";
   elements.imageInput.value = "";
   elements.previewWrap.classList.add("hidden");
+  if (elements.imageGrid) elements.imageGrid.innerHTML = "";
+  const fn = document.querySelector("#imageFileName");
+  if (fn) fn.textContent = "";
+  const actions = document.querySelector("#imageActions");
+  if (actions) actions.style.display = "none";
   renderResult(state.lastResult);
   setStatus("Ready.");
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle("dark");
+  localStorage.setItem("data-tool-theme", isDark ? "dark" : "light");
 }
 
 function setStatus(message, tone = "neutral") {

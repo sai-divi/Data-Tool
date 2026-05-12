@@ -14,6 +14,9 @@
             <h1>Data Tool</h1>
           </div>
         <div class="topbar-actions">
+          <button class="theme-toggle" id="themeToggle" type="button" title="Toggle dark/light theme">
+            <span id="themeIcon">&#9790;</span>
+          </button>
           <button class="ghost-button" id="clearButton" type="button">
             <i data-lucide="rotate-ccw"></i>
             Reset
@@ -34,32 +37,28 @@
           </div>
 
           <div class="mode-switch" role="tablist" aria-label="Collector modes">
-            <button class="mode-button active" type="button" data-mode="web">Get Pages</button>
-            <button class="mode-button" type="button" data-mode="osint">Find Info</button>
+            <button class="mode-button active" type="button" data-mode="osint">Find Info</button>
+            <button class="mode-button" type="button" data-mode="image">Image Search</button>
             <button class="mode-button" type="button" data-mode="transcript">YouTube</button>
           </div>
 
-
-
-          <div class="mode-panel" id="webGrabPanel">
-            <label class="field-label" for="webInput">Website Links</label>
-            <textarea id="webInput" class="field-control text-area" spellcheck="false" placeholder="https://example.com&#10;https://github.com/example"></textarea>
-          </div>
-
-          <div class="mode-panel hidden" id="osintPanel">
+          <div class="mode-panel" id="osintPanel">
             <label class="field-label" for="rawInput">Names, Links, or Text</label>
             <textarea id="rawInput" class="field-control text-area" spellcheck="false" placeholder="@username&#10;https://instagram.com/name&#10;Paste any text to search"></textarea>
+          </div>
 
+          <div class="mode-panel hidden" id="imagePanel">
+            <label class="field-label">Upload Photos</label>
             <div class="drop-zone" id="dropZone">
-              <input id="imageInput" type="file" accept="image/*">
+              <input id="imageInput" type="file" accept="image/*" multiple>
               <div class="drop-zone-content">
-                <strong>Drop a photo here or click to browse</strong>
+                <strong>Drop photos here or click to browse</strong>
                 <span id="imageFileName" style="font-size:12px;color:#666"></span>
               </div>
               <div class="drop-zone-buttons" id="imageActions" style="display:none">
                 <button class="ghost-button compact" id="ocrButton" type="button">
                   <i data-lucide="image"></i>
-                  OCR
+                  Read Text
                 </button>
                 <button class="ghost-button compact" id="imageSearchButton" type="button">
                   <i data-lucide="search"></i>
@@ -71,9 +70,8 @@
                 </button>
               </div>
             </div>
-
             <div class="image-preview-wrap hidden" id="previewWrap">
-              <img id="imagePreview" alt="Uploaded screenshot preview">
+              <div id="imageGrid" style="display:flex;flex-wrap:wrap;gap:8px"></div>
             </div>
           </div>
 
@@ -164,6 +162,22 @@
           </div>
         </section>
       </main>
+    </div>
+
+    <div class="search-overlay hidden" id="searchOverlay">
+      <div class="search-overlay-header">
+        <span id="searchOverlayTitle">Search Results</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="ghost-button compact" id="openInBrowser" type="button" style="display:none">Open in Browser</button>
+          <button class="ghost-button compact" id="closeSearchOverlay" type="button">
+            <i data-lucide="x"></i>
+            Close
+          </button>
+        </div>
+      </div>
+      <div class="search-overlay-body">
+        <iframe id="searchFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+      </div>
     </div>
 
     <script src="./app.js"></script>
