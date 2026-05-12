@@ -11,38 +11,118 @@ const state = {
 const platformProfiles = {
   youtube: {
     label: "YouTube",
-    direct: (handle) => `https://www.youtube.com/@${encodeURIComponent(handle)}`,
-    search: (handle) => `https://www.youtube.com/results?search_query=${encodeURIComponent(handle)}`
+    direct: (h) => `https://www.youtube.com/@${encodeURIComponent(h)}`,
+    search: (h) => `https://www.youtube.com/results?search_query=${encodeURIComponent(h)}`
   },
   instagram: {
     label: "Instagram",
-    direct: (handle) => `https://www.instagram.com/${encodeURIComponent(handle)}/`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${handle}"`)}`
+    direct: (h) => `https://www.instagram.com/${encodeURIComponent(h)}/`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:instagram.com "${h}"`)}`
   },
   tiktok: {
     label: "TikTok",
-    direct: (handle) => `https://www.tiktok.com/@${encodeURIComponent(handle)}`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:tiktok.com/@ "${handle}"`)}`
+    direct: (h) => `https://www.tiktok.com/@${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:tiktok.com "@${h}"`)}`
   },
   x: {
     label: "X",
-    direct: (handle) => `https://x.com/${encodeURIComponent(handle)}`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:x.com "${handle}"`)}`
+    direct: (h) => `https://x.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:x.com "${h}"`)}`
   },
   reddit: {
     label: "Reddit",
-    direct: (handle) => `https://www.reddit.com/user/${encodeURIComponent(handle)}/`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:reddit.com/user "${handle}"`)}`
+    direct: (h) => `https://www.reddit.com/user/${encodeURIComponent(h)}/`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:reddit.com/user "${h}"`)}`
   },
   github: {
     label: "GitHub",
-    direct: (handle) => `https://github.com/${encodeURIComponent(handle)}`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:github.com "${handle}"`)}`
+    direct: (h) => `https://github.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:github.com "${h}"`)}`
   },
   twitch: {
     label: "Twitch",
-    direct: (handle) => `https://www.twitch.tv/${encodeURIComponent(handle)}`,
-    search: (handle) => `https://www.google.com/search?q=${encodeURIComponent(`site:twitch.tv "${handle}"`)}`
+    direct: (h) => `https://www.twitch.tv/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:twitch.tv "${h}"`)}`
+  },
+  facebook: {
+    label: "Facebook",
+    direct: (h) => `https://www.facebook.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:facebook.com "${h}"`)}`
+  },
+  linkedin: {
+    label: "LinkedIn",
+    direct: (h) => `https://www.linkedin.com/in/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:linkedin.com/in "${h}"`)}`
+  },
+  snapchat: {
+    label: "Snapchat",
+    direct: (h) => `https://www.snapchat.com/add/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`snapchat "${h}"`)}`
+  },
+  telegram: {
+    label: "Telegram",
+    direct: (h) => `https://t.me/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:t.me "${h}"`)}`
+  },
+  discord: {
+    label: "Discord",
+    direct: (h) => `https://discord.com/users/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`discord "${h}"`)}`
+  },
+  whatsapp: {
+    label: "WhatsApp",
+    direct: () => null,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`whatsapp "${h}"`)}`
+  },
+  signal: {
+    label: "Signal",
+    direct: () => null,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`signal "${h}"`)}`
+  },
+  pinterest: {
+    label: "Pinterest",
+    direct: (h) => `https://www.pinterest.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:pinterest.com "${h}"`)}`
+  },
+  tumblr: {
+    label: "Tumblr",
+    direct: (h) => `https://${encodeURIComponent(h)}.tumblr.com`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:tumblr.com "${h}"`)}`
+  },
+  medium: {
+    label: "Medium",
+    direct: (h) => `https://medium.com/@${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:medium.com "@${h}"`)}`
+  },
+  soundcloud: {
+    label: "SoundCloud",
+    direct: (h) => `https://soundcloud.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:soundcloud.com "${h}"`)}`
+  },
+  patreon: {
+    label: "Patreon",
+    direct: (h) => `https://www.patreon.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:patreon.com "${h}"`)}`
+  },
+  onlyfans: {
+    label: "OnlyFans",
+    direct: (h) => `https://onlyfans.com/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:onlyfans.com "${h}"`)}`
+  },
+  threads: {
+    label: "Threads",
+    direct: (h) => `https://www.threads.net/@${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:threads.net "${h}"`)}`
+  },
+  bluesky: {
+    label: "Bluesky",
+    direct: (h) => `https://bsky.app/profile/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`site:bsky.app "${h}"`)}`
+  },
+  telegram_channel: {
+    label: "Telegram Channel",
+    direct: (h) => `https://t.me/s/${encodeURIComponent(h)}`,
+    search: (h) => `https://www.google.com/search?q=${encodeURIComponent(`t.me/${h}`)}`
   }
 };
 
@@ -463,35 +543,75 @@ function analyzeInput(rawText, selectedType) {
   const emails = extractEmails(rawText);
   const phoneMatches = extractPossiblePhones(rawText);
   const dates = extractDates(rawText);
+  const ips = extractIPs(rawText);
+  const crypto = extractCryptoAddresses(rawText);
+  const discordInvites = extractDiscordInvites(rawText);
 
   urls.forEach((url) => addUrlFinding(result, url));
   handles.forEach((handle) => addHandleFinding(result, handle, selectedType));
 
-  if (selectedType === "youtube") {
-    inferSingleHandle(rawText).forEach((handle) => addHandleFinding(result, handle, "youtube"));
-  }
-
-  if (selectedType === "instagram") {
-    inferSingleHandle(rawText).forEach((handle) => addHandleFinding(result, handle, "instagram"));
+  if (selectedType === "auto") {
+    const inferred = inferSingleHandle(rawText);
+    inferred.forEach((handle) => {
+      const exists = handles.some((h) => cleanHandle(h) === handle);
+      if (!exists) addHandleFinding(result, handle, "generic");
+    });
   }
 
   emails.forEach((email) => {
     addFinding(result, {
-      type: "Sensitive contact",
+      type: "Email address",
       value: email,
-      confidence: "medium",
+      confidence: "high",
       source: "Input text",
-      notes: "Email address detected. Keep it redacted unless it is clearly public and relevant.",
-      tags: ["sensitive", "redact"]
+      notes: "Email detected. Verify it is public before including in reports.",
+      tags: ["sensitive", "email"]
     });
   });
 
   if (phoneMatches.length) {
-    addFlag(result, "danger", `${phoneMatches.length} possible phone number${phoneMatches.length === 1 ? "" : "s"} detected. Redact before sharing reports.`);
+    addFinding(result, {
+      type: "Phone number",
+      value: phoneMatches.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: `${phoneMatches.length} possible phone number(s). Handle with care.`,
+      tags: ["sensitive", "phone"]
+    });
   }
 
-  if (selectedType === "screenshot" || /instagram|message|dm|chat/i.test(rawText)) {
-    addFlag(result, "warn", "Message screenshots can contain private conversation data. Keep collection limited to authorized cases.");
+  if (ips.length) {
+    addFinding(result, {
+      type: "IP address",
+      value: ips.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: "IP address detected. May indicate server origin or VPN.",
+      tags: ["network", "ip"]
+    });
+  }
+
+  const allCrypto = [...crypto.btc, ...crypto.eth, ...crypto.usdt];
+  if (allCrypto.length) {
+    addFinding(result, {
+      type: "Cryptocurrency address",
+      value: allCrypto.join(", "),
+      confidence: "medium",
+      source: "Input text",
+      notes: `${crypto.btc.length} BTC, ${crypto.eth.length} ETH, ${crypto.usdt.length} USDT addresses found.`,
+      tags: ["crypto", "financial"]
+    });
+  }
+
+  if (discordInvites.length) {
+    addFinding(result, {
+      type: "Discord invite",
+      value: discordInvites.join(", "),
+      confidence: "high",
+      source: "Input text",
+      notes: "Discord server invite link detected.",
+      tags: ["social", "discord"]
+    });
   }
 
   if (dates.length) {
@@ -500,18 +620,18 @@ function analyzeInput(rawText, selectedType) {
       value: dates.join(", "),
       confidence: "low",
       source: "Input text",
-      notes: "Dates or times may help order events, but should be verified against source context.",
+      notes: "Dates or timestamps. Verify against original context.",
       tags: ["timeline"]
     });
   }
 
   if (!result.findings.length && rawText) {
     addFinding(result, {
-      type: "Unstructured note",
-      value: rawText.slice(0, 180),
+      type: "Unstructured text",
+      value: rawText.slice(0, 200),
       confidence: "low",
       source: "Input text",
-      notes: "No platform handle or URL was detected automatically.",
+      notes: "No handle or URL detected. Manual review recommended.",
       tags: ["manual-review"]
     });
   }
@@ -600,12 +720,26 @@ function addCrossPlatformSources(result) {
 
   handles.forEach((handle) => {
     Object.entries(platformProfiles).forEach(([key, platform]) => {
-      const exists = result.sources.some((source) => source.url === platform.direct(handle));
+      const directUrl = platform.direct(handle);
+      if (directUrl) {
+        const exists = result.sources.some((source) => source.url === directUrl);
+        if (!exists) {
+          addSource(result, {
+            title: `${platform.label} same-handle lead`,
+            url: directUrl,
+            kind: "Cross-platform",
+            target: `@${handle}`,
+            checked: false
+          });
+        }
+      }
+      const searchUrl = platform.search(handle);
+      const exists = result.sources.some((source) => source.url === searchUrl);
       if (!exists) {
         addSource(result, {
-          title: `${platform.label} same-handle lead`,
-          url: platform.direct(handle),
-          kind: "Cross-platform",
+          title: `${platform.label} search`,
+          url: searchUrl,
+          kind: "Cross-platform search",
           target: `@${handle}`,
           checked: false
         });
@@ -616,6 +750,14 @@ function addCrossPlatformSources(result) {
       title: "Exact phrase web search",
       url: `https://www.google.com/search?q=${encodeURIComponent(`"${handle}"`)}`,
       kind: "Search",
+      target: `@${handle}`,
+      checked: false
+    });
+
+    addSource(result, {
+      title: "Username search (WhatsMyName)",
+      url: `https://whatsmyname.app/?q=${encodeURIComponent(handle)}`,
+      kind: "Aggregator",
       target: `@${handle}`,
       checked: false
     });
@@ -708,8 +850,8 @@ async function enrichPublicSourceMetadata(result) {
 }
 
 function extractUrls(text) {
-  const matches = text.match(/\bhttps?:\/\/[^\s<>"']+/gi) || [];
-  return unique(matches.map((url) => url.replace(/[),.;]+$/, "")));
+  const matches = text.match(/\bhttps?:\/\/[^\s<>"'\]]+/gi) || [];
+  return unique(matches.map((url) => url.replace(/[),.;:]+$/, "").replace(/#.*$/, "")));
 }
 
 function extractHandles(text) {
@@ -726,17 +868,38 @@ function extractHandleFromUrl(url) {
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, "");
     const parts = parsed.pathname.split("/").filter(Boolean);
-
-    if (host.includes("youtube.com") && parts[0]?.startsWith("@")) return parts[0];
-    if (host.includes("instagram.com") && parts[0]) return parts[0];
-    if (host.includes("tiktok.com") && parts[0]?.startsWith("@")) return parts[0];
-    if ((host === "x.com" || host === "twitter.com") && parts[0]) return parts[0];
-    if (host.includes("reddit.com") && parts[0] === "user" && parts[1]) return parts[1];
-    if (host.includes("github.com") && parts[0]) return parts[0];
-    if (host.includes("twitch.tv") && parts[0]) return parts[0];
-  } catch {
-    return "";
-  }
+    if (host.includes("youtube.com") || host === "youtu.be") return parts[0]?.startsWith("@") ? parts[0] : (parts[1] === "channel" && parts[2] ? parts[2] : parts[0]?.startsWith("@") ? parts[0] : "");
+    if (host.includes("instagram.com")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
+    if (host.includes("tiktok.com")) return parts[0]?.startsWith("@") ? parts[0] : parts[0];
+    if (host === "x.com" || host.includes("twitter.com")) return parts[0] || "";
+    if (host.includes("reddit.com")) return parts[0] === "user" ? parts[1] : parts[0]?.startsWith("u/") ? parts[0].slice(2) : parts[0]?.startsWith("/u/") ? parts[0].slice(3) : "";
+    if (host.includes("github.com") || host === "git.io") return parts[0] || "";
+    if (host.includes("twitch.tv")) return parts[0] || "";
+    if (host.includes("facebook.com") || host === "fb.com") return parts[0] || "";
+    if (host.includes("linkedin.com")) return parts[1] === "in" ? parts[2] : (parts[0] === "in" ? parts[1] : parts[0]);
+    if (host.includes("snapchat.com")) return parts[0] === "add" ? parts[1] : parts[0];
+    if (host === "t.me" || host.includes("telegram.org") || host === "telegram.me") return parts[0] || "";
+    if (host.includes("pinterest")) return parts[0] || "";
+    if (host.includes("tumblr.com")) return parts[0] || host.replace(".tumblr.com", "");
+    if (host.includes("medium.com")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
+    if (host.includes("soundcloud.com")) return parts[0] || "";
+    if (host.includes("patreon.com")) return parts[0] || "";
+    if (host.includes("onlyfans.com")) return parts[0] || "";
+    if (host.includes("threads.net")) return parts[0]?.startsWith("@") ? parts[0].slice(1) : parts[0];
+    if (host === "bsky.app") return parts[1] === "profile" ? parts[2] : "";
+    if (host.includes("behance.net")) return parts[0] || "";
+    if (host.includes("dribbble.com")) return parts[0] || "";
+    if (host.includes("flickr.com")) return parts[0] === "people" ? parts[1] : parts[0];
+    if (host.includes("vimeo.com")) return parts[0] || "";
+    if (host.includes("codepen.io")) return parts[0] || "";
+    if (host.includes("keybase.io")) return parts[0] || "";
+    if (host.includes("about.me")) return parts[0] || "";
+    if (host.includes("angel.co") || host.includes("angellist.com")) return parts[0] || "";
+    if (host.includes("producthunt.com")) return parts[0] === "profile" ? parts[1] : parts[0]?.startsWith("@") ? parts[0].slice(1) : "";
+    if (host.includes("discord.com") || host.includes("discord.gg") || host.includes("discord.me")) return host.includes("invite") ? parts[1] : "";
+    if (host.includes("steamcommunity.com")) return parts[0] === "id" ? parts[1] : (parts[1] === "profiles" ? parts[2] : "");
+    if (host.includes("telegram.dog")) return parts[0] || "";
+  } catch { return ""; }
   return "";
 }
 
@@ -745,12 +908,50 @@ function extractEmails(text) {
 }
 
 function extractPossiblePhones(text) {
-  return unique(text.match(/(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/g) || []);
+  const patterns = [
+    /(?:\+?1[\s.-]?)?(?:\(?\d{3}\)?[\s.-]?)\d{3}[\s.-]?\d{4}/g,
+    /\+\d{1,3}[\s.-]?\d{6,14}(?:[\s.-]\d{1,5})?/g,
+    /(?:tel|phone|cell|mobile|call)[:\s]*\+?[\d\s().-]{7,15}/gi
+  ];
+  const all = [];
+  patterns.forEach((p) => { const m = text.match(p); if (m) all.push(...m); });
+  return unique(all);
 }
 
 function extractDates(text) {
-  const dateLike = text.match(/\b(?:\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(?:,\s*\d{4})?|\d{1,2}:\d{2}\s*(?:AM|PM)?)\b/gi) || [];
-  return unique(dateLike);
+  const patterns = [
+    /\b\d{1,2}[/-]\d{1,2}(?:[/-]\d{2,4})?\b/g,
+    /\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember|t)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+\d{1,2}(?:,?\s*\d{4})?\b/gi,
+    /\b\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?\b/gi,
+    /\b\d{4}[/-]\d{1,2}[/-]\d{1,2}\b/g,
+    /\b(?:yesterday|today|tomorrow|last\s+\w+|next\s+\w+)\b/gi,
+    /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)(?:day)?\b/gi
+  ];
+  const all = [];
+  patterns.forEach((p) => { const m = text.match(p); if (m) all.push(...m); });
+  return unique(all);
+}
+
+function extractIPs(text) {
+  const ipv4 = text.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || [];
+  return unique(ipv4.filter((ip) => ip.split(".").every((o) => Number(o) >= 0 && Number(o) <= 255)));
+}
+
+function extractCryptoAddresses(text) {
+  const btc = text.match(/\b[13][a-km-zA-HJ-NP-Z1-9]{25,34}\b/g) || [];
+  const eth = text.match(/\b0x[a-fA-F0-9]{40}\b/g) || [];
+  const usdt = text.match(/\bT[A-HJ-NP-Za-km-z1-9]{33}\b/g) || [];
+  return { btc: unique(btc), eth: unique(eth), usdt: unique(usdt) };
+}
+
+function extractDiscordInvites(text) {
+  const codes = text.match(/(?:discord\.(?:gg|me|io|com\/invite)\/)([a-zA-Z0-9_-]+)/g) || [];
+  return unique(codes);
+}
+
+function extractUserAgents(text) {
+  const ua = text.match(/[A-Za-z0-9]+\/[0-9]+\.[0-9]+(?:\.[0-9]+)?\s*\([^)]+\)\s*(?:[A-Za-z0-9/]+(?:\s+[A-Za-z0-9/]+)*)?/g) || [];
+  return unique(ua);
 }
 
 function inferSingleHandle(text) {
@@ -774,10 +975,34 @@ function classifyUrl(url) {
     if (host.includes("youtube.com") || host === "youtu.be") return { key: "youtube", label: "YouTube" };
     if (host.includes("instagram.com")) return { key: "instagram", label: "Instagram" };
     if (host.includes("tiktok.com")) return { key: "tiktok", label: "TikTok" };
-    if (host === "x.com" || host === "twitter.com") return { key: "x", label: "X" };
+    if (host === "x.com" || host.includes("twitter.com")) return { key: "x", label: "X" };
     if (host.includes("reddit.com")) return { key: "reddit", label: "Reddit" };
-    if (host.includes("github.com")) return { key: "github", label: "GitHub" };
+    if (host.includes("github.com") || host === "git.io") return { key: "github", label: "GitHub" };
     if (host.includes("twitch.tv")) return { key: "twitch", label: "Twitch" };
+    if (host.includes("facebook.com") || host === "fb.com") return { key: "facebook", label: "Facebook" };
+    if (host.includes("linkedin.com")) return { key: "linkedin", label: "LinkedIn" };
+    if (host.includes("snapchat.com")) return { key: "snapchat", label: "Snapchat" };
+    if (host === "t.me" || host.includes("telegram") || host === "telegram.me" || host === "telegram.dog") return { key: "telegram", label: "Telegram" };
+    if (host.includes("discord.com") || host.includes("discord.gg") || host.includes("discord.me")) return { key: "discord", label: "Discord" };
+    if (host.includes("pinterest")) return { key: "pinterest", label: "Pinterest" };
+    if (host.includes("tumblr.com")) return { key: "tumblr", label: "Tumblr" };
+    if (host.includes("medium.com")) return { key: "medium", label: "Medium" };
+    if (host.includes("soundcloud.com")) return { key: "soundcloud", label: "SoundCloud" };
+    if (host.includes("patreon.com")) return { key: "patreon", label: "Patreon" };
+    if (host.includes("onlyfans.com")) return { key: "onlyfans", label: "OnlyFans" };
+    if (host.includes("threads.net")) return { key: "threads", label: "Threads" };
+    if (host === "bsky.app") return { key: "bluesky", label: "Bluesky" };
+    if (host.includes("whatsapp.com")) return { key: "whatsapp", label: "WhatsApp" };
+    if (host.includes("signal.org") || host.includes("signal.me")) return { key: "signal", label: "Signal" };
+    if (host.includes("behance.net")) return { key: "web", label: "Behance" };
+    if (host.includes("dribbble.com")) return { key: "web", label: "Dribbble" };
+    if (host.includes("flickr.com")) return { key: "web", label: "Flickr" };
+    if (host.includes("vimeo.com")) return { key: "web", label: "Vimeo" };
+    if (host.includes("codepen.io")) return { key: "web", label: "CodePen" };
+    if (host.includes("keybase.io")) return { key: "web", label: "Keybase" };
+    if (host.includes("steamcommunity.com") || host.includes("steampowered.com")) return { key: "web", label: "Steam" };
+    if (host.includes("producthunt.com")) return { key: "web", label: "Product Hunt" };
+    if (host.includes("angel.co") || host.includes("angellist.com")) return { key: "web", label: "AngelList" };
     return { key: "web", label: host };
   } catch {
     return { key: "web", label: "Web" };
@@ -786,10 +1011,28 @@ function classifyUrl(url) {
 
 function inferPlatformForHandle(value) {
   const lower = String(value || "").toLowerCase();
-  if (lower.includes("youtube")) return "youtube";
-  if (lower.includes("instagram")) return "instagram";
+  if (lower.includes("youtube") || lower.includes("yt/")) return "youtube";
+  if (lower.includes("instagram") || lower.includes("ig/")) return "instagram";
   if (lower.includes("tiktok")) return "tiktok";
-  if (lower.includes("github")) return "github";
+  if (lower.includes("github") || lower.includes("gh/")) return "github";
+  if (lower.includes("discord")) return "discord";
+  if (lower.includes("telegram") || lower.includes("t.me")) return "telegram";
+  if (lower.includes("snapchat")) return "snapchat";
+  if (lower.includes("facebook") || lower.includes("fb/")) return "facebook";
+  if (lower.includes("linkedin") || lower.includes("li/")) return "linkedin";
+  if (lower.includes("twitch")) return "twitch";
+  if (lower.includes("reddit")) return "reddit";
+  if (lower.includes("x.com") || lower.includes("twitter")) return "x";
+  if (lower.includes("signal")) return "signal";
+  if (lower.includes("whatsapp")) return "whatsapp";
+  if (lower.includes("medium")) return "medium";
+  if (lower.includes("patreon")) return "patreon";
+  if (lower.includes("onlyfans")) return "onlyfans";
+  if (lower.includes("soundcloud") || lower.includes("sc/")) return "soundcloud";
+  if (lower.includes("pinterest")) return "pinterest";
+  if (lower.includes("tumblr")) return "tumblr";
+  if (lower.includes("threads")) return "threads";
+  if (lower.includes("bluesky") || lower.includes("bsky")) return "bluesky";
   return "generic";
 }
 
