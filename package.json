@@ -1,0 +1,19 @@
+{
+  "name": "data-tool",
+  "version": "1.0.0",
+  "description": "A minimal public web grabber and OSINT collection workspace called Data Tool.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "osint",
+    "investigation",
+    "youtube",
+    "ocr",
+    "public-records"
+  ],
+  "author": "",
+  "license": "MIT"
+}

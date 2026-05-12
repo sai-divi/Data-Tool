@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Tool</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Public Research</p>
+          <h1>Data Tool</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-button" id="clearButton" type="button">
+            <i data-lucide="rotate-ccw"></i>
+            Reset
+          </button>
+          <button class="primary-button" id="runButton" type="button">
+            <i data-lucide="scan-search"></i>
+            Run
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="input-panel" aria-label="Inputs">
+          <div class="panel-heading">
+            <div>
+              <h2>Input</h2>
+            </div>
+            <span class="local-pill">Public only</span>
+          </div>
+
+          <div class="mode-switch" role="tablist" aria-label="Collector modes">
+            <button class="mode-button active" type="button" data-mode="web">Web Grabber</button>
+            <button class="mode-button" type="button" data-mode="osint">OSINT Collector</button>
+          </div>
+
+          <div class="connection-panel">
+            <div class="connection-main">
+              <div>
+                <span class="field-label inline-label">Connection</span>
+                <p id="connectionText">Checking internet access...</p>
+              </div>
+              <span class="connection-pill unknown" id="connectionBadge">Checking</span>
+            </div>
+            <div class="switch-row">
+              <input id="onlineMode" type="checkbox" checked>
+              <label for="onlineMode">Online web collection</label>
+              <button class="ghost-button compact" id="connectionButton" type="button">
+                <i data-lucide="wifi"></i>
+                Check
+              </button>
+            </div>
+          </div>
+
+          <div class="mode-panel" id="webGrabPanel">
+            <label class="field-label" for="webInput">Public URLs</label>
+            <textarea id="webInput" class="field-control text-area" spellcheck="false" placeholder="https://example.com&#10;https://github.com/openai"></textarea>
+          </div>
+
+          <div class="mode-panel hidden" id="osintPanel">
+            <label class="field-label" for="targetType">Target type</label>
+            <select id="targetType" class="field-control">
+              <option value="auto">Auto detect</option>
+              <option value="youtube">YouTube account</option>
+              <option value="instagram">Instagram username</option>
+              <option value="screenshot">Message screenshot text</option>
+              <option value="generic">Generic username / URL</option>
+            </select>
+
+            <label class="field-label" for="rawInput">OSINT text</label>
+            <textarea id="rawInput" class="field-control text-area" spellcheck="false" placeholder="@youtubehandle&#10;https://instagram.com/example&#10;Paste screenshot text here"></textarea>
+
+            <div class="drop-zone" id="dropZone">
+              <input id="imageInput" type="file" accept="image/*">
+              <div>
+                <strong>Screenshot</strong>
+              </div>
+              <button class="ghost-button compact" id="ocrButton" type="button">
+                <i data-lucide="image"></i>
+                OCR
+              </button>
+            </div>
+
+            <div class="image-preview-wrap hidden" id="previewWrap">
+              <img id="imagePreview" alt="Uploaded screenshot preview">
+            </div>
+          </div>
+
+          <div class="consent-row">
+            <input id="consentCheck" type="checkbox" checked>
+            <label for="consentCheck">Public or authorized use</label>
+          </div>
+
+          <div class="status-box" id="statusBox">Ready.</div>
+        </section>
+
+        <section class="results-panel" aria-label="Results">
+          <div class="tabs" role="tablist" aria-label="Result views">
+            <button class="tab-button active" type="button" data-tab="summary">Summary</button>
+            <button class="tab-button" type="button" data-tab="findings">Findings</button>
+            <button class="tab-button" type="button" data-tab="sources">Sources</button>
+            <button class="tab-button" type="button" data-tab="report">Report</button>
+          </div>
+
+          <div class="tab-panel active" id="summaryTab">
+            <div class="summary-grid">
+              <article class="metric">
+                <span id="metricTargets">0</span>
+                <p>Targets</p>
+              </article>
+              <article class="metric">
+                <span id="metricSources">0</span>
+                <p>Source leads</p>
+              </article>
+              <article class="metric">
+                <span id="metricFlags">0</span>
+                <p>Flags</p>
+              </article>
+            </div>
+            <div class="analyst-card">
+              <h2>Analyst Summary</h2>
+              <p id="summaryText">Run a collection to generate a concise public-source brief.</p>
+            </div>
+            <div class="section-heading">
+              <h2>Safety Flags</h2>
+            </div>
+            <div class="flag-list" id="flagList"></div>
+          </div>
+
+          <div class="tab-panel" id="findingsTab">
+            <div class="section-heading">
+              <h2>Findings</h2>
+              <button class="ghost-button compact" id="copyJsonButton" type="button">
+                <i data-lucide="copy"></i>
+                JSON
+              </button>
+            </div>
+            <div class="finding-list" id="findingList"></div>
+          </div>
+
+          <div class="tab-panel" id="sourcesTab">
+            <div class="section-heading">
+              <h2>Source Leads</h2>
+              <button class="ghost-button compact" id="openAllButton" type="button">
+                <i data-lucide="external-link"></i>
+                Open Checked
+              </button>
+            </div>
+            <div class="source-list" id="sourceList"></div>
+          </div>
+
+          <div class="tab-panel" id="reportTab">
+            <div class="section-heading">
+              <h2>Report</h2>
+              <button class="ghost-button compact" id="copyReportButton" type="button">
+                <i data-lucide="clipboard"></i>
+                Copy
+              </button>
+            </div>
+            <textarea id="reportOutput" class="report-output" readonly></textarea>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
