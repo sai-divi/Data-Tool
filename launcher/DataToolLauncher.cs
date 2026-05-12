@@ -82,23 +82,30 @@ namespace DataToolLauncher
 
         private static void OpenApp()
         {
-            try
+            string[] browsers = { "chrome.exe", "msedge.exe", "brave.exe", "opera.exe", "firefox.exe" };
+            foreach (string browser in browsers)
             {
-                string edge = FindBrowser("msedge.exe");
-                if (!string.IsNullOrEmpty(edge))
+                try
                 {
-                    Process.Start(new ProcessStartInfo
+                    string path = FindBrowser(browser);
+                    if (!string.IsNullOrEmpty(path))
                     {
-                        FileName = edge,
-                        Arguments = "--app=" + AppUrl + " --window-size=1280,800",
-                        UseShellExecute = false
-                    });
-                    return;
+                        string args = browser == "firefox.exe"
+                            ? "-new-window " + AppUrl
+                            : "--app=" + AppUrl + " --window-size=1280,800";
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = path,
+                            Arguments = args,
+                            UseShellExecute = false
+                        });
+                        return;
+                    }
                 }
-            }
-            catch
-            {
-                // Fallback
+                catch
+                {
+                    // Try next browser
+                }
             }
 
             try
@@ -168,10 +175,16 @@ namespace DataToolLauncher
         {
             string[] searchPaths = new[]
             {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft", "Edge", "Application"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft", "Edge", "Application"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application")
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "BraveSoftware", "Brave-Browser", "Application"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "BraveSoftware", "Brave-Browser", "Application"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Opera", "Application"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Opera", "Application"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Mozilla Firefox"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Mozilla Firefox"),
             };
 
             foreach (string dir in searchPaths)

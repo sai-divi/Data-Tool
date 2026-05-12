@@ -53,18 +53,14 @@ const elements = {
   transcriptPanel: document.querySelector("#transcriptPanel"),
   transcriptInput: document.querySelector("#transcriptInput"),
   webInput: document.querySelector("#webInput"),
-  targetType: document.querySelector("#targetType"),
+
   rawInput: document.querySelector("#rawInput"),
   imageInput: document.querySelector("#imageInput"),
   dropZone: document.querySelector("#dropZone"),
   ocrButton: document.querySelector("#ocrButton"),
   previewWrap: document.querySelector("#previewWrap"),
   imagePreview: document.querySelector("#imagePreview"),
-  consentCheck: document.querySelector("#consentCheck"),
-  onlineMode: document.querySelector("#onlineMode"),
-  connectionBadge: document.querySelector("#connectionBadge"),
-  connectionText: document.querySelector("#connectionText"),
-  connectionButton: document.querySelector("#connectionButton"),
+
   statusBox: document.querySelector("#statusBox"),
   runButton: document.querySelector("#runButton"),
   clearButton: document.querySelector("#clearButton"),
@@ -107,22 +103,17 @@ function bindInputs() {
   elements.runButton.addEventListener("click", runCurrentMode);
   elements.clearButton.addEventListener("click", resetWorkspace);
   elements.ocrButton.addEventListener("click", runOcr);
+  const imgSearchBtn = document.querySelector("#imageSearchButton");
+  const faceSearchBtn = document.querySelector("#faceSearchButton");
+  if (imgSearchBtn) imgSearchBtn.addEventListener("click", () => runImageSearch("google"));
+  if (faceSearchBtn) faceSearchBtn.addEventListener("click", () => runImageSearch("face"));
   elements.copyJsonButton.addEventListener("click", copyJson);
   elements.copyReportButton.addEventListener("click", copyReport);
   elements.copyTranscriptButton.addEventListener("click", copyTranscript);
   elements.openAllButton.addEventListener("click", openCheckedSources);
-  elements.connectionButton.addEventListener("click", () => updateConnectionStatus(true));
-  elements.onlineMode.addEventListener("change", () => {
-    if (elements.onlineMode.checked) {
-      updateConnectionStatus(true);
-    } else {
-      setStatus("Online web collection disabled. Local parsing still works.");
-    }
-  });
-  window.addEventListener("online", () => updateConnectionStatus(true));
+  window.addEventListener("online", () => { if (!state.connection.online) updateConnectionStatus(true); });
   window.addEventListener("offline", () => {
     state.connection = { online: false, checkedAt: new Date().toISOString() };
-    setConnectionDisplay(false, "Browser offline", "Offline");
   });
 
   elements.modeButtons.forEach((button) => {
@@ -169,56 +160,29 @@ function setMode(mode) {
 async function updateConnectionStatus(force = false) {
   if (!navigator.onLine) {
     state.connection = { online: false, checkedAt: new Date().toISOString() };
-    setConnectionDisplay(false, "Browser reports offline.", "Offline");
     return false;
   }
-
-  setConnectionDisplay(null, "Checking internet access...", "Checking");
-  elements.connectionButton.disabled = true;
 
   try {
     const response = await fetch(`/api/connection${force ? "?force=1" : ""}`, { cache: "no-store" });
     const payload = await response.json();
     const online = response.ok && payload.online;
     state.connection = { ...payload, online };
-
-    if (online) {
-      setConnectionDisplay(true, "Internet access verified.", "Online");
-      return true;
-    }
-
-    setConnectionDisplay(false, payload.error || "Internet access unavailable.", "Offline");
-    return false;
+    return online;
   } catch {
     state.connection = { online: false, checkedAt: new Date().toISOString() };
-    setConnectionDisplay(false, "Connection check failed.", "Offline");
     return false;
-  } finally {
-    elements.connectionButton.disabled = false;
-    refreshIcons();
   }
 }
 
 async function ensureOnlineConnection() {
   if (!navigator.onLine) {
     state.connection = { online: false, checkedAt: new Date().toISOString() };
-    setConnectionDisplay(false, "Browser offline", "Offline");
     return false;
   }
-
   const checkedAt = state.connection.checkedAt ? new Date(state.connection.checkedAt).getTime() : 0;
-  if (state.connection.online && Date.now() - checkedAt < 30000) {
-    return true;
-  }
-
+  if (state.connection.online && Date.now() - checkedAt < 30000) return true;
   return updateConnectionStatus(true);
-}
-
-function setConnectionDisplay(online, text, label) {
-  const className = online === null ? "unknown" : online ? "online" : "offline";
-  elements.connectionBadge.className = `connection-pill ${className}`;
-  elements.connectionBadge.textContent = label;
-  elements.connectionText.textContent = text;
 }
 
 function createEmptyResult() {
@@ -251,11 +215,6 @@ async function runCurrentMode() {
 }
 
 async function runWebGrab() {
-  if (!elements.consentCheck.checked) {
-    setStatus("Collection paused until public/authorized use is confirmed.", "warn");
-    return;
-  }
-
   const rawText = elements.webInput.value.trim();
   if (!rawText) {
     setStatus("Add at least one public URL.", "warn");
@@ -384,11 +343,6 @@ function addWebPageFinding(result, page) {
 }
 
 async function runYouTubeTranscript() {
-  if (!elements.consentCheck.checked) {
-    setStatus("Collection paused until public/authorized use is confirmed.", "warn");
-    return;
-  }
-
   const url = elements.transcriptInput.value.trim();
   if (!url) {
     setStatus("Paste a YouTube video URL first.", "warn");
@@ -422,6 +376,19 @@ async function runYouTubeTranscript() {
         notes: `Channel: ${data.channel || "Unknown"} | ${data.chunkCount} segments | ${data.wordCount} words`,
         tags: ["youtube", "transcript"]
       });
+      if (data.violationAnalysis?.category) {
+        addFinding(result, {
+          type: "YouTube Content Violation",
+          value: `Category: ${data.violationAnalysis.category}`,
+          confidence: "medium",
+          source: `https://www.youtube.com/watch?v=${data.videoId}`,
+          notes: data.flaggedSegments?.length
+            ? `${data.flaggedSegments.length} flagged segment(s)`
+            : "Pattern match in metadata",
+          tags: ["youtube", "transcript", "violation"]
+        });
+        addFlag(result, "danger", `[${data.violationAnalysis.category}] Violation analysis triggered`);
+      }
       if (data.flaggedSegments?.length) {
         addFinding(result, {
           type: "Flagged Content Alert",
@@ -466,11 +433,6 @@ async function runYouTubeTranscript() {
 }
 
 async function runOsintCollection() {
-  if (!elements.consentCheck.checked) {
-    setStatus("Collection paused until public/authorized use is confirmed.", "warn");
-    return;
-  }
-
   const rawText = elements.rawInput.value.trim();
   if (!rawText && !state.uploadedImage) {
     setStatus("Add a handle, URL, note, or screenshot first.", "warn");
@@ -478,27 +440,14 @@ async function runOsintCollection() {
   }
 
   setStatus("Parsing public-source leads...");
-  const result = analyzeInput(rawText, elements.targetType.value);
+  const result = analyzeInput(rawText, "auto");
   state.lastResult = result;
   renderResult(result);
 
-  if (elements.onlineMode.checked) {
-    const canCollectOnline = await ensureOnlineConnection();
-    if (canCollectOnline) {
-      await enrichYouTubeFindings(result);
-      await enrichPublicSourceMetadata(result);
-    } else {
-      addFlag(result, "warn", "Live web collection skipped because no internet connection was verified.");
-      result.summary = buildSummary(result);
-      result.report = buildReport(result);
-      renderResult(result);
-      setStatus("Local parsing complete. Internet is required for live web collection.", "warn");
-      return;
-    }
-  } else {
-    addFlag(result, "warn", "Online web collection is disabled. Results are local leads only.");
-    result.summary = buildSummary(result);
-    result.report = buildReport(result);
+  const canCollectOnline = await ensureOnlineConnection();
+  if (canCollectOnline) {
+    await enrichYouTubeFindings(result);
+    await enrichPublicSourceMetadata(result);
   }
 
   renderResult(result);
@@ -895,8 +844,11 @@ function buildSummary(result) {
   if (result.transcriptResult?.ok) {
     const t = result.transcriptResult;
     const flags = t.flaggedSegments?.length || 0;
+    const violation = t.violationAnalysis?.category;
     const base = `YouTube transcript grabbed: "${t.title || "Untitled"}" by ${t.channel || "Unknown"} — ${t.chunkCount} segments, ${t.wordCount} words.`;
-    return flags ? `${base} ⚠ ${flags} potentially harmful segment(s) flagged. See transcript tab.` : `${base} No harmful content detected.`;
+    if (violation) return `${base} ⚠ VIOLATION: ${violation}. See transcript tab.`;
+    if (flags) return `${base} ⚠ ${flags} potentially harmful segment(s) flagged. See transcript tab.`;
+    return `${base} No harmful content detected.`;
   }
 
   if (!result.findings.length && !result.sources.length) {
@@ -921,10 +873,16 @@ function buildSummary(result) {
 function buildReport(result) {
   if (result.transcriptResult?.report) {
     const data = result.transcriptResult;
-    if (data.flaggedSegments?.length) {
-      return "⚠ ===== FLAGGED CONTENT REPORT ===== ⚠\n\n" + data.report;
+    let prefix = "";
+    if (data.violationAnalysis?.category) {
+      prefix = "⚠ ===== VIOLATION ANALYSIS ===== ⚠\n\n" +
+        "```\n" + data.violationAnalysis.output1 + "\n```\n\n" +
+        "```\n" + data.violationAnalysis.output2 + "\n```\n\n";
     }
-    return data.report;
+    if (data.flaggedSegments?.length) {
+      return prefix + "⚠ ===== FLAGGED CONTENT REPORT ===== ⚠\n\n" + data.report;
+    }
+    return prefix + data.report;
   }
 
   const lines = [
@@ -1075,11 +1033,29 @@ function renderTranscript(transcriptResult) {
   const flaggedStarts = new Set(flagged.map((f) => f.start));
   const flaggedReasons = {};
   flagged.forEach((f) => { flaggedReasons[f.start] = f.reason; });
+  const analysis = transcriptResult.violationAnalysis;
 
   let html = "";
 
+  // Violation Analysis section (new)
+  if (analysis && analysis.category) {
+    html += `<div class="section-heading" style="margin-top:0"><h2 style="color:#cc0000">⚠ Content Violation Analysis</h2></div>`;
+
+    html += `<div style="background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:4px;margin-bottom:12px;font-family:Consolas,monospace;font-size:13px;white-space:pre-wrap;overflow-x:auto">`;
+    html += `<span style="color:#569cd6">\`\`\`</span>`;
+    html += `\n${escapeHtml(analysis.output1)}\n`;
+    html += `<span style="color:#569cd6">\`\`\`</span>`;
+    html += `\n\n`;
+    html += `<span style="color:#569cd6">\`\`\`</span>`;
+    html += `\n${escapeHtml(analysis.output2)}\n`;
+    html += `<span style="color:#569cd6">\`\`\`</span>`;
+    html += `</div>`;
+
+    html += `<hr style='margin:16px 0;border:none;border-top:1px solid #000'>`;
+  }
+
   if (flagged.length) {
-    html += `<div class="section-heading" style="margin-top:0"><h2 style="color:#cc0000">⚠ Flagged Content (${flagged.length})</h2></div>`;
+    html += `<div class="section-heading"><h2 style="color:#cc0000">⚠ Flagged Content (${flagged.length})</h2></div>`;
     flagged.forEach((seg) => {
       const m = Math.floor(seg.start / 60);
       const s = Math.floor(seg.start % 60);
@@ -1098,7 +1074,7 @@ function renderTranscript(transcriptResult) {
       `;
     });
     html += "<hr style='margin:16px 0;border:none;border-top:1px solid #000'>";
-  } else {
+  } else if (!analysis || !analysis.category) {
     html += `<div class="empty-state">No potentially harmful content detected in this transcript.</div><hr style="margin:16px 0;border:none;border-top:1px solid #000">`;
   }
 
@@ -1149,7 +1125,6 @@ async function runOcr() {
     const text = result?.data?.text?.trim();
     if (text) {
       elements.rawInput.value = [elements.rawInput.value.trim(), text].filter(Boolean).join("\n\n");
-      elements.targetType.value = "screenshot";
       setStatus("OCR text added.");
     } else {
       setStatus("OCR finished, but no text was detected.", "warn");
@@ -1178,7 +1153,41 @@ function setUploadedImage(file) {
   state.uploadedImage = file;
   elements.imagePreview.src = URL.createObjectURL(file);
   elements.previewWrap.classList.remove("hidden");
+  const fn = document.querySelector("#imageFileName");
+  if (fn) fn.textContent = file.name;
+  const actions = document.querySelector("#imageActions");
+  if (actions) actions.style.display = "flex";
   setStatus(`Loaded ${file.name}.`);
+}
+
+function runImageSearch(mode) {
+  if (!state.uploadedImage) { setStatus("Drop an image first.", "warn"); return; }
+  const reader = new FileReader();
+  reader.onload = async function (e) {
+    const dataUrl = e.target.result;
+    try {
+      const resp = await fetch("/api/upload-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl })
+      });
+      const data = await resp.json();
+      if (data.url) {
+        if (mode === "google") {
+          window.open(`https://lens.google.com/uploadbyurl?url=${encodeURIComponent(data.url)}`, "_blank");
+        } else {
+          window.open(`https://pimeyes.com/en`, "_blank");
+          setTimeout(() => { window.open(`https://www.google.com/searchbyimage?image_url=${encodeURIComponent(data.url)}`, "_blank"); }, 500);
+        }
+        setStatus(`${mode === "google" ? "Image search" : "Face search"} opened in new tab.`);
+      } else {
+        setStatus("Upload failed.", "warn");
+      }
+    } catch {
+      setStatus("Upload failed. Check server connection.", "warn");
+    }
+  };
+  reader.readAsDataURL(state.uploadedImage);
 }
 
 function copyJson() {
@@ -1224,7 +1233,6 @@ function resetWorkspace() {
   elements.transcriptInput.value = "";
   elements.imageInput.value = "";
   elements.previewWrap.classList.add("hidden");
-  elements.targetType.value = "auto";
   renderResult(state.lastResult);
   setStatus("Ready.");
 }

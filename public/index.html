@@ -10,10 +10,9 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Public Research</p>
-          <h1>Data Tool</h1>
-        </div>
+          <div>
+            <h1>Data Tool</h1>
+          </div>
         <div class="topbar-actions">
           <button class="ghost-button" id="clearButton" type="button">
             <i data-lucide="rotate-ccw"></i>
@@ -32,7 +31,6 @@
             <div>
               <h2>Input</h2>
             </div>
-            <span class="local-pill">Public only</span>
           </div>
 
           <div class="mode-switch" role="tablist" aria-label="Collector modes">
@@ -41,23 +39,7 @@
             <button class="mode-button" type="button" data-mode="transcript">YT Transcript</button>
           </div>
 
-          <div class="connection-panel">
-            <div class="connection-main">
-              <div>
-                <span class="field-label inline-label">Connection</span>
-                <p id="connectionText">Checking internet access...</p>
-              </div>
-              <span class="connection-pill unknown" id="connectionBadge">Checking</span>
-            </div>
-            <div class="switch-row">
-              <input id="onlineMode" type="checkbox" checked>
-              <label for="onlineMode">Online web collection</label>
-              <button class="ghost-button compact" id="connectionButton" type="button">
-                <i data-lucide="wifi"></i>
-                Check
-              </button>
-            </div>
-          </div>
+
 
           <div class="mode-panel" id="webGrabPanel">
             <label class="field-label" for="webInput">Public URLs</label>
@@ -65,27 +47,29 @@
           </div>
 
           <div class="mode-panel hidden" id="osintPanel">
-            <label class="field-label" for="targetType">Target type</label>
-            <select id="targetType" class="field-control">
-              <option value="auto">Auto detect</option>
-              <option value="youtube">YouTube account</option>
-              <option value="instagram">Instagram username</option>
-              <option value="screenshot">Message screenshot text</option>
-              <option value="generic">Generic username / URL</option>
-            </select>
-
             <label class="field-label" for="rawInput">OSINT text</label>
             <textarea id="rawInput" class="field-control text-area" spellcheck="false" placeholder="@youtubehandle&#10;https://instagram.com/example&#10;Paste screenshot text here"></textarea>
 
             <div class="drop-zone" id="dropZone">
               <input id="imageInput" type="file" accept="image/*">
-              <div>
-                <strong>Screenshot</strong>
+              <div class="drop-zone-content">
+                <strong>Drop image here or click to browse</strong>
+                <span id="imageFileName" style="font-size:12px;color:#666"></span>
               </div>
-              <button class="ghost-button compact" id="ocrButton" type="button">
-                <i data-lucide="image"></i>
-                OCR
-              </button>
+              <div class="drop-zone-buttons" id="imageActions" style="display:none">
+                <button class="ghost-button compact" id="ocrButton" type="button">
+                  <i data-lucide="image"></i>
+                  OCR
+                </button>
+                <button class="ghost-button compact" id="imageSearchButton" type="button">
+                  <i data-lucide="search"></i>
+                  Image Search
+                </button>
+                <button class="ghost-button compact" id="faceSearchButton" type="button">
+                  <i data-lucide="external-link"></i>
+                  Face Search
+                </button>
+              </div>
             </div>
 
             <div class="image-preview-wrap hidden" id="previewWrap">
@@ -96,11 +80,6 @@
           <div class="mode-panel hidden" id="transcriptPanel">
             <label class="field-label" for="transcriptInput">YouTube Video URL</label>
             <textarea id="transcriptInput" class="field-control text-area" spellcheck="false" placeholder="https://www.youtube.com/watch?v=VIDEO_ID" style="min-height:60px"></textarea>
-          </div>
-
-          <div class="consent-row">
-            <input id="consentCheck" type="checkbox" checked>
-            <label for="consentCheck">Public or Authorized use</label>
           </div>
 
           <div class="status-box" id="statusBox">Ready.</div>
