@@ -665,7 +665,7 @@ const TOXIC_PATTERNS = [
   { pattern: /[a4]uschw[i1]tz\s*(?:w[a4]s\s*a\s*r[e3]s[o0]rt|w[a4]sn[']?t_r[e3][a4]l|h[o0][a4]x)/i, reason: "Holocaust denial" },
   { pattern: /6_m[i1]ll[i1][o0]n\s*(?:l[i1]e|h[o0][a4]x|f[a4]k[e3])/i, reason: "Holocaust denial" },
   { pattern: /(?:1488|14_88|88_pr[e3]c[e3]pts)/i, reason: "White supremacist numeric code" },
-  { pattern: /18(?:th)?\s*(?:w[o0]rd|l[e3]tt[e3]r)?/i, reason: "Neo-Nazi code" },
+  { pattern: /\b18(?:th)?\s*(?:w[o0]rd|l[e3]tt[e3]r|c[o0]d[e3]|pr[e3]c[e3]pt)\b/i, reason: "Neo-Nazi code" },
 
   // ── Additional anti-LGBTQ+ / grooming accusations ──
   { pattern: /gr[o0][o0]m[e3]r(?:s)?/i, reason: "Anti-LGBTQ+ slur" },
@@ -754,6 +754,49 @@ const TOXIC_PATTERNS = [
   { pattern: /d[o0]_[a4]_f[a4]v[o0]r_[a4]nd_k[i1]ll_y[o0]urs[e3]lf/i, reason: "Self-harm encouragement" },
   { pattern: /w[o0]rld_[i1]s_b[e3]tt[e3]r_with[o0]ut_y[o0]u/i, reason: "Harassment" },
   { pattern: /n[o0]_[o0]n[e3]_w[a4]nts_y[o0]u_h[e3]r[e3]/i, reason: "Harassment" },
+
+  // ── Misinformation / propaganda / disinformation ──
+  { pattern: /(?:n[e3]v[e3]r\s*(?:had|been|achieved|experienced)|(?:h[a4](?:d|s)|h[a4]v[e3])\s*n[o0]t?\s*(?:been|had|achieved|experienced)?)\s*(?:a_)?(?:truly|r[e3]ally|tr[u4]e|genuine|lasting|a_)?\s*(?:united|independent|self[-\s]?(?:rul[e3]|g[o0]v[e3]rn(?:ment|ance)?)|st[a4]bl[e3]\s*(?:g[o0]v[e3]rnment?|p[e3]ri[o0]d|dem[o0]cracy|rule|n[a4]t[i1][o0]n))/i, reason: "Historical misinformation" },
+  { pattern: /(?:import|imp[o0]rt)\s*(?:this|their|that|the)\s*(?:culture|cultural|game|way\s*of\s*life|values?|norms?|habits?|behavi[o0]r)/i, reason: "Xenophobic propaganda" },
+  { pattern: /(?:turn(?:ing)?\s*(?:out|up)?\s*(?:like|into)|becom(?:e|ing)\s*(?:like|the\s*same\s*as)|end\s*up\s*(?:like|looking\s*like))\s*(?:india|china|africa|mexico|middle\s*east|third\s*world|developing|bangladesh|pakistan)/i, reason: "Civilizational fear-mongering" },
+  { pattern: /risk\s*(?:the|our)\s*(?:west(?:ern)?|society|culture|civilization|way\s*of\s*life|future|n[a4]t[i1][o0]n)/i, reason: "Civilizational fear-mongering" },
+  { pattern: /(?:d[o0]\s*we|sh[o0]uld\s*we)\s*(?:r[e3]ally|tr[u4]ly|h[o0]n[e3]stly)\s*w[a4]nt\s*t[o0]\s*(?:import|be[co0]m[e3]|turn\s*(?:out|into)|inv[i1]t[e3])/i, reason: "Xenophobic rhetoric" },
+  { pattern: /l[e3]st\s*(?:we|the|our)\s*(?:risk|end\s*up|bec[o0]m[e3]|turn)/i, reason: "Doomsaying propaganda" },
+  { pattern: /(?:deeply[\s_]+r[o0][o0]t[e3]d|ingrained)\s*(?:cultural|cultur[a4]l)[\s_]+(?:adapt[a4]t[i1][o0]ns|patterns?|tr[a4]its?|habits?)/i, reason: "Cultural determinism" },
+  { pattern: /(?:wh[o0]l[e3]\s*(?:n[a4]t[i1][o0]n|c[o0]untry|cultur[e3]|pe[o0]pl[e3])|entir[e3]\s*(?:n[a4]t[i1][o0]n|c[o0]untry|cultur[e3]))\s*(?:is|ar[e3]|was|wer[e3])\s*(?:like|such|the\s*same)/i, reason: "Overgeneralization propaganda" },
+  { pattern: /\bjug[a4]?[a4]?d\b/i, reason: "Cultural propaganda" },
+
+  // ── Anti-immigrant "invasion"/"takeover"/"influx" framing ──
+  { pattern: /(?:indian|immigrant|foreign|migrant|south.asian|bangladesh|pakistan)\s*(?:invasion|takeover|influx|flood|wave|horde)/i, reason: "Xenophobic hate" },
+  { pattern: /invad(?:ed|ing)\s*(?:by|with)\s*(?:indian|immigrant|foreign|south.asian|bangladesh)/i, reason: "Xenophobic hate" },
+  { pattern: /(?:never|didn't|did_not|nobody|no_one)\s*(?:vote|ask|consent)\s*(?:for|to)\s*(?:be|being|our)\s*(?:invaded|replaced|taken|colonized)/i, reason: "Anti-immigration propaganda" },
+
+  // ── Ethnic stereotyping / hygiene / dehumanizing ──
+  { pattern: /(?:indian|immigrant|foreign|these)\s*(?:people|guys|creatures|immigrants)?\s*(?:ar[e3]|are|was|were)\s*(?:generally|typically|usually|all|mostly)\s*(?:dirty|disgusting|gross|nasty|filthy|lazy|criminal|stupid|weird|creepy|loud)/i, reason: "Xenophobic hate" },
+  { pattern: /\bdirty\s*(?:indian|immigrant|people|nation|race|country)\b/i, reason: "Xenophobic hate" },
+  { pattern: /(?:eat(?:ing)?|consuming?|throw)\s*(?:poo|poop|shit|feces|excrement|human[\s_]+waste|waste|garbage|trash)/i, reason: "Dehumanizing stereotype" },
+  { pattern: /(?:not\s*wearing|lack\s*of|without)\s*(?:deodorant|hygiene|soap)/i, reason: "Dehumanizing stereotype" },
+
+  // ── "Everywhere" / "spawning" / demographic fear ──
+  { pattern: /(?:spawn|popping?|materializ|appear|seem)\s*(?:up|out)?\s*(?:out\s*of|from)\s*(?:thin|nowher|everywhere|the[\s_]+ground)/i, reason: "Xenophobic rhetoric" },
+  { pattern: /(?:indian|immigrant|foreign|these)\s*(?:people|guys|creatures)?\s*(?:ar[e3]|are|is)\s*(?:just|now|spread|taking|popping[\s_]*up)\s*(?:everywhere|all[\s_]+over|over)/i, reason: "Xenophobic rhetoric" },
+
+  // ── Ethnic transformation / replacement terms ──
+  { pattern: /(?:indian|immigrant|foreign|south.asian)\s*(?:ification|ization|isation)\b/i, reason: "Xenophobic hate" },
+  { pattern: /(?:once|a[\s_]+once|formerly|previously)\s*(?:a[\s_]+)?\s*(?:small|quiet|peaceful|nice|beautiful|charming|sleepy|peaceful|quaint)\s*(?:town|city|area|neighborhood|community|village)\s*(?:turn(?:ed|ing)|became|become|transformed|converted|changed|has.*become)\s*(?:into|to)\s*(?:an?|a[\s_]?|the[\s_]?)?(?:indian|immigrant|foreign)/i, reason: "Xenophobic propaganda" },
+
+  // ── "Fatigue" / anti-immigrant content template ──
+  { pattern: /\b(?:indian|immigrant|foreign)\s*fatigue\b/i, reason: "Xenophobic propaganda" },
+
+  // ── Dehumanizing slurs (bugman, subhuman) ──
+  { pattern: /\bbugman\b/i, reason: "Dehumanizing slur" },
+  { pattern: /godforsaken\s*(?:indian|african|asian|country|land|continent|subcontinent|nation|place)/i, reason: "Xenophobic hate" },
+
+  // ── "Third world" as derogatory ──
+  { pattern: /\bthird\s*[-\s]?world\b/i, reason: "Xenophobic rhetoric" },
+
+  // ── Christian / Hindu / religious stereotyping ──
+  { pattern: /(?:indian|hindu)\s*(?:worship|pray|bow|prostrat)\s*(?:animatronic|statue|idol|cow|monkey|rat|doll)/i, reason: "Religious hate" },
 ];
 
 function flagToxicContent(chunks) {
@@ -795,9 +838,9 @@ function classifyViolation(reasons) {
   if (/supremacist.ideology|dehumanizing|scientific.racism|race.war|ethnic.cleansing/i.test(joined)) return "Hateful or abusive content";
   if (/neo.nazi|nazi.ideology|nazi.apologia|white.supr[e3]m[a4]cist|white.genocide|white.shave|ethn[o0]st[a4]t[e3]/i.test(joined)) return "Hateful or abusive content";
   if (/antisemitic|jewish.conspiracy|zionist.*conspiracy|holocaust.denial|judeo/i.test(joined)) return "Hateful or abusive content";
-  if (/islamophobic|muslim.*slur|muslim.*invasion|islamist.*disease|anti.christian/i.test(joined)) return "Hateful or abusive content";
+  if (/islamophobic|muslim.*slur|muslim.*invasion|islamist.*disease|anti.christian|religious\.hate/i.test(joined)) return "Hateful or abusive content";
   if (/homophobic|transphobic|anti.lgbt|lgbt.hate|groomer.*lgbt|drag.*queen.*hate/i.test(joined)) return "Hateful or abusive content";
-  if (/xenophobic|anti.immigration|anchor.baby|chain.migration|go_back_to_your|send_them_back/i.test(joined)) return "Hateful or abusive content";
+  if (/xenophobic|anti.immigration|anchor.baby|chain.migration|go_back_to_your|send_them_back|fear.mongering|civilizational|\.propaganda/i.test(joined)) return "Hateful or abusive content";
 
   // Misogyny / sexism
   if (/sexist|misogyn|violence.against.women|rape.apologia|incel|thot|femoid/i.test(joined)) return "Hateful or abusive content";
@@ -808,7 +851,7 @@ function classifyViolation(reasons) {
   if (/worthless|useless.*you|nobody_likes|no_one_wants|hates_you/i.test(joined)) return "Harassment or bullying";
 
   // Misinformation
-  if (/misinform|conspiracy.propaganda|fake.news|hoax|plandemic|scamdemic|covid.*hoax|vaccine.*microchip|q[a4]n[o0]n|newworldorder|great.reset|depopulation/i.test(joined)) return "Misinformation";
+  if (/misinform|conspiracy\.|fake\.news|hoax|plandemic|scamdemic|covid.*hoax|vaccine.*microchip|q[a4]n[o0]n|newworldorder|great\.reset|depopulation|historical\.misinform|cultural\.determinism|overgeneralization|doomsaying/i.test(joined)) return "Misinformation";
 
   // Ableist / body shaming / profanity
   if (/ableist|body.shaming|ageist|dogwhistle/i.test(joined)) return "Hateful or abusive content";
