@@ -284,7 +284,6 @@ const elements = {
   runButton: document.querySelector("#runButton"),
   clearButton: document.querySelector("#clearButton"),
   copyJsonButton: document.querySelector("#copyJsonButton"),
-  copyReportButton: document.querySelector("#copyReportButton"),
   copyTranscriptButton: document.querySelector("#copyTranscriptButton"),
   openAllButton: document.querySelector("#openAllButton"),
   metricTargets: document.querySelector("#metricTargets"),
@@ -294,7 +293,9 @@ const elements = {
   flagList: document.querySelector("#flagList"),
   findingList: document.querySelector("#findingList"),
   sourceList: document.querySelector("#sourceList"),
-  reportOutput: document.querySelector("#reportOutput")
+  generateReportsBtn: document.querySelector("#generateReportsBtn"),
+  reportCount: document.querySelector("#reportCount"),
+  ytBlocksContainer: document.querySelector("#ytBlocksContainer")
 };
 
 init();
@@ -334,8 +335,8 @@ function bindInputs() {
   if (imgSearchBtn) imgSearchBtn.addEventListener("click", () => runImageSearch("google"));
   if (faceSearchBtn) faceSearchBtn.addEventListener("click", () => runImageSearch("face"));
   elements.copyJsonButton.addEventListener("click", copyJson);
-  elements.copyReportButton.addEventListener("click", copyReport);
   elements.copyTranscriptButton.addEventListener("click", copyTranscript);
+  elements.generateReportsBtn.addEventListener("click", generateReports);
   elements.openAllButton.addEventListener("click", openCheckedSources);
   window.addEventListener("online", () => { if (!state.connection.online) updateConnectionStatus(true); });
   window.addEventListener("offline", () => {
@@ -1691,7 +1692,6 @@ function renderResult(result) {
   elements.metricSources.textContent = String(result.sources.length);
   elements.metricFlags.textContent = String(result.flags.length);
   elements.summaryText.textContent = result.summary;
-  elements.reportOutput.value = result.report || buildReport(result);
 
   renderFlags(result.flags);
   renderFindings(result.findings);
@@ -2052,10 +2052,6 @@ function copyJson() {
   copyText(JSON.stringify(state.lastResult, null, 2), "Data copied.");
 }
 
-function copyReport() {
-  copyText(elements.reportOutput.value, "Report copied.");
-}
-
 function copyTranscript() {
   const report = state.lastResult.transcriptResult?.report;
   if (report) {
@@ -2063,6 +2059,114 @@ function copyTranscript() {
   } else {
     setStatus("Nothing to copy yet.", "warn");
   }
+}
+
+function condensedQuote(text, matchStr) {
+  if (!matchStr || !text) return (text || "").slice(0, 120);
+  const idx = text.toLowerCase().indexOf(matchStr.toLowerCase());
+  if (idx === -1) return text.slice(0, 120);
+
+  const before = text.slice(0, idx).trim();
+  const after = text.slice(idx + matchStr.length).trim();
+
+  const wordsBefore = before.split(/\s+/).filter(Boolean);
+  const wordsAfter = after.split(/\s+/).filter(Boolean);
+
+  const ctxBefore = wordsBefore.slice(-3).join(" ");
+  const ctxAfter = wordsAfter.slice(0, 3).join(" ");
+
+  let result = `(${ctxBefore}`;
+  if (ctxBefore) result += " ... ";
+  result += matchStr;
+  if (ctxAfter) result += ` ... ${ctxAfter})`;
+  else result += ")";
+  return result;
+}
+
+function generateReports() {
+  const container = elements.ytBlocksContainer;
+  const transcriptData = state.lastResult?.transcriptResult;
+  const hasFlags = transcriptData?.flaggedSegments?.length > 0;
+  const num = parseInt(elements.reportCount.value, 10);
+  const totalBlocks = Math.max(1, Math.min(50, isNaN(num) ? 5 : num));
+  const category = transcriptData?.violationAnalysis?.category;
+
+  if (!hasFlags || !transcriptData.flaggedSegments.length) {
+    container.innerHTML = `<div class="empty-state">No flagged content to report on. Run a YouTube transcript with violations first.</div>`;
+    return;
+  }
+
+  const header = category
+    ? `[Content Violation: ${category}]`
+    : "[Flagged Content]";
+
+  const allBlocks = [];
+
+  for (let b = 0; b < totalBlocks; b++) {
+    const segments = [...transcriptData.flaggedSegments];
+    for (let i = segments.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [segments[i], segments[j]] = [segments[j], segments[i]];
+    }
+
+    let content = header;
+
+    for (const seg of segments) {
+      const ts = fmtTime(seg.start);
+      const text = (seg.text || "").replace(/\s+/g, " ").trim();
+      const quote = condensedQuote(text, seg.match || "");
+      const entry = `\n• [${ts}] (${seg.reason}) ${quote}`;
+
+      if (content.length + entry.length > 500) break;
+      content += entry;
+    }
+
+    allBlocks.push(content === header
+      ? `${header}\n• [${fmtTime(segments[0].start)}] (${segments[0].reason}) ${condensedQuote((segments[0].text || "").replace(/\s+/g, " ").trim(), segments[0].match || "")}`
+      : content);
+  }
+
+  let html = `<div class="section-heading">
+    <h2>${totalBlocks} Block${totalBlocks > 1 ? "s" : ""}</h2>
+    <button class="ghost-button compact" id="copyAllReportsBtn" type="button">
+      <i data-lucide="copy"></i> Copy All
+    </button>
+  </div>`;
+
+  allBlocks.forEach((block, i) => {
+    const label = `Block ${i + 1}/${totalBlocks}`;
+    html += `
+      <article class="yt-block">
+        <div class="finding-header">
+          <p class="finding-title">${label}</p>
+          <span style="font-size:11px;color:var(--muted)">${block.length}/500 chars</span>
+          <button class="ghost-button compact yt-block-copy" type="button" data-block="${escapeAttribute(block)}" data-label="${label}">
+            <i data-lucide="clipboard"></i>
+            Copy
+          </button>
+        </div>
+        <p class="finding-meta">${escapeHtml(block)}</p>
+      </article>`;
+  });
+
+  container.innerHTML = html;
+
+  container.querySelectorAll(".yt-block-copy").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      copyText(btn.dataset.block, `${btn.dataset.label} copied.`);
+    });
+  });
+
+  const copyAllBtn = container.querySelector("#copyAllReportsBtn");
+  if (copyAllBtn) {
+    copyAllBtn.addEventListener("click", () => {
+      const allText = allBlocks.map((b, i) => `Block ${i + 1}/${totalBlocks}\n${b}`).join("\n\n");
+      copyText(allText, `All ${totalBlocks} blocks copied.`);
+    });
+  }
+
+  refreshIcons();
+  setStatus(`${totalBlocks} block${totalBlocks > 1 ? "s" : ""} generated.`);
 }
 
 async function copyText(text, successMessage) {

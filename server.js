@@ -441,42 +441,40 @@ const TOXIC_PATTERNS = [
   { pattern: /f[u4]ck(?:ing|e[dr])?/i, reason: "Profanity" },
   { pattern: /sh[i1]t(?:ting|head)?/i, reason: "Profanity" },
   { pattern: /b[i1]tch(?:ing|es|ass)?/i, reason: "Profanity" },
-  { pattern: /d[a4]mn?/i, reason: "Mild profanity" },
-  { pattern: /[a4]ss(?:hole|hat|wipe)?/i, reason: "Profanity" },
+  { pattern: /\b[a4]ss(?:hole|hat|wipe)?\b/i, reason: "Profanity" },
   { pattern: /b[a4]st[a4]rd/i, reason: "Profanity" },
-  { pattern: /cr[a4]p/i, reason: "Mild profanity" },
   { pattern: /d[i1]ck(?:head)?/i, reason: "Profanity" },
   { pattern: /p[i1]ss/i, reason: "Mild profanity" },
   { pattern: /sl[u4]t/i, reason: "Profanity" },
   { pattern: /wh[o0]r[e3](?:s|ing)?/i, reason: "Profanity" },
   { pattern: /c[u4]nt/i, reason: "Profanity" },
-  { pattern: /t[i1]ts?/i, reason: "Mild profanity" },
+  { pattern: /\bt[i1]ts?\b/i, reason: "Mild profanity" },
   { pattern: /tw[a4]t/i, reason: "Profanity" },
   { pattern: /pr[i1]ck/i, reason: "Profanity" },
   { pattern: /b[o0]ll[o0]ck/i, reason: "Profanity" },
   { pattern: /[a4]rse/i, reason: "Mild profanity" },
 
-  // ── Racial slurs (no word boundaries = higher sensitivity) ──
-  { pattern: /n[i1]gg[ae3]r/i, reason: "Racial slur" },
-  { pattern: /n[i1]gg[a4]/i, reason: "Racial slur" },
-  { pattern: /n[i1]g[a4]?/i, reason: "Racial slur" },
-  { pattern: /sp[i1]c/i, reason: "Racial slur" },
-  { pattern: /sp[i1]ck/i, reason: "Racial slur" },
-  { pattern: /ch[i1]nk/i, reason: "Racial slur" },
-  { pattern: /ch[i1]nky/i, reason: "Racial slur" },
+  // ── Racial slurs (word-bounded to avoid substring false positives) ──
+  { pattern: /\bn[i1]gg[ae3]r\b/i, reason: "Racial slur" },
+  { pattern: /\bn[i1]gg[a4]\b/i, reason: "Racial slur" },
+  { pattern: /\bn[i1]g[a4]?\b/i, reason: "Racial slur" },
+  { pattern: /\bsp[i1]c\b/i, reason: "Racial slur" },
+  { pattern: /\bsp[i1]ck\b/i, reason: "Racial slur" },
+  { pattern: /\bch[i1]nk\b/i, reason: "Racial slur" },
+  { pattern: /\bch[i1]nky\b/i, reason: "Racial slur" },
   { pattern: /g[o0][o0]k/i, reason: "Racial slur" },
   { pattern: /g[o0][o0]ky/i, reason: "Racial slur" },
   { pattern: /w[o0]p/i, reason: "Ethnic slur" },
   { pattern: /m[a4]ng[i1]n[a4]?/i, reason: "Racial slur" },
   { pattern: /s[a4]nd\s*n[i1]gg[ae3]r/i, reason: "Racial slur" },
   { pattern: /t[a4]r[b4]aby[a4]?/i, reason: "Racial slur" },
-  { pattern: /b[a4]b[a4]?/i, reason: "Racial slur" },
+
   { pattern: /b[i1]mb[o0]/i, reason: "Ethnic stereotype" },
-  { pattern: /c[o0][o0]n/i, reason: "Racial slur" },
+  { pattern: /\bc[o0][o0]n\b/i, reason: "Racial slur" },
   { pattern: /j[i1]g[a4]b[o0][o0]/i, reason: "Racial slur" },
   { pattern: /p[o0]rch\s*m[o0]nkey/i, reason: "Racial slur" },
   { pattern: /m[o0]nkey\s*(?:see|hear|speak)?/i, reason: "Dehumanizing slur" },
-  { pattern: /[a4]p[e3](?:s|ish)?/i, reason: "Dehumanizing slur" },
+  { pattern: /\b[a4]p[e3](?:s|ish)?\b/i, reason: "Dehumanizing slur" },
   { pattern: /c[o0]tt[o0]n\s*p[i1]ck[i1]ng/i, reason: "Racial slur" },
   { pattern: /bl[a4]ck\s*(?:sup[r4]em[a4]cy|m[a4]st[e3]r\s*r[a4]c[e3])/i, reason: "Racial supremacy" },
   { pattern: /wh[i1]t[e3]\s*(?:sup[r4]em[a4]cy|m[a4]st[e3]r\s*r[a4]c[e3])/i, reason: "White supremacist ideology" },
@@ -486,7 +484,6 @@ const TOXIC_PATTERNS = [
   { pattern: /wh[i1]t[e3]\s*gen[o0]c[i1]d[e3]/i, reason: "White supremacist propaganda" },
   { pattern: /[o0]v[e3]rb[e3]r/i, reason: "White supremacist term" },
   { pattern: /r[e3]pl[a4]c[e3]m[e3]nt\s*th[e3][o0]ry/i, reason: "White supremacist conspiracy" },
-  { pattern: /r[e3]pl[a4]c[e3]m[e3]nt/i, reason: "White supremacist propaganda" },
   { pattern: /gr[e3][a4]t\s*r[e3]pl[a4]c[e3]m[e3]nt/i, reason: "White supremacist propaganda" },
   { pattern: /bl[a4]ck\s*on\s*wh[i1]t[e3]\s*(?:cr[i1]m[e3]|viol[e3]nc[e3])/i, reason: "Racial incitement" },
   { pattern: /wh[i1]t[e3]\s*on\s*bl[a4]ck\s*(?:cr[i1]m[e3]|viol[e3]nc[e3])/i, reason: "Racial incitement" },
@@ -534,32 +531,21 @@ const TOXIC_PATTERNS = [
   { pattern: /str[a4]ight\s*pr[i1]d[e3]/i, reason: "Anti-LGBTQ+ rhetoric" },
 
   // ── Ableist slurs / disability hate ──
-  { pattern: /r[e3]t[a4]rd[e3]d?/i, reason: "Ableist slur" },
-  { pattern: /r[e3]t[a4]rd?/i, reason: "Ableist slur" },
-  { pattern: /sp[a4]z/i, reason: "Ableist slur" },
-  { pattern: /sp[a4]zz/i, reason: "Ableist slur" },
+  { pattern: /\br[e3]t[a4]rd[e3]d?\b/i, reason: "Ableist slur" },
+  { pattern: /\br[e3]t[a4]rd?\b/i, reason: "Ableist slur" },
   { pattern: /m[i1]dget/i, reason: "Ableist slur" },
   { pattern: /cr[i1]ppl[e3]d?/i, reason: "Ableist slur" },
-  { pattern: /l[a4]m[e3]/i, reason: "Ableist slur" },
-  { pattern: /dumb(?:ass)?/i, reason: "Ableist slur" },
-  { pattern: /m[o0]r[o0]n/i, reason: "Ableist slur" },
-  { pattern: /im[b4]ec[i1]l[e3]/i, reason: "Ableist slur" },
-  { pattern: /id[i1][o0]t/i, reason: "Ableist slur" },
-  { pattern: /lun[a4]tic/i, reason: "Ableist slur" },
-  { pattern: /m[a4]dm[a4]n/i, reason: "Ableist slur" },
-  { pattern: /cr[a4]zy\s*(?:p[e3][o0]pl[e3]|w[o0]m[a4]n|g[i1]rl|p[e3]rs[o0]n)/i, reason: "Ableist discrimination" },
-  { pattern: /sch[i1]z[o0]/i, reason: "Ableist slur" },
+  { pattern: /\bsch[i1]z[o0]\b/i, reason: "Ableist slur" },
   { pattern: /aut[i1]st[i1]c\s*(?:ar[e3]\s*stup[i1]d|sh[o0]uld)/i, reason: "Ableist hate" },
-  { pattern: /w[h4]e[e3]lch[a4]ir\s*(?:b[o0]und|st[i1]ck)/i, reason: "Ableist stereotype" },
 
   // ── Religious hate ──
-  { pattern: /k[i1]k[e3]/i, reason: "Religious slur" },
+  { pattern: /\bk[i1]k[e3]\b/i, reason: "Religious slur" },
   { pattern: /r[a4]g[h4][e3]ad/i, reason: "Religious slur" },
   { pattern: /t[o0]w[e3]l\s*h[e3]ad/i, reason: "Religious slur" },
   { pattern: /(?:j[e3]w|j[e3]ws?)\s*(?:c[o0]ntr[o0]l|m[o0]ney|l[i1]e|run\s*the\s*w[o0]rld|c[o0]nspr[i1]cy)/i, reason: "Antisemitic stereotype" },
   { pattern: /j[e3]w\s*(?:r[u4]n|c[o0]ntr[o0]l)\s*(?:th[e3]|the)\s*(?:w[o0]rld|m[e3]d[i1][a4]|b[a4]nks?|g[o0]v[e3]rnm[e3]nt)/i, reason: "Antisemitic conspiracy" },
   { pattern: /shyl[o0]ck/i, reason: "Antisemitic slur" },
-  { pattern: /h[e3]b[e3]/i, reason: "Antisemitic slur" },
+  { pattern: /\bh[e3]b[e3]\b/i, reason: "Antisemitic slur" },
   { pattern: /(?:j[e3]w|j[e3]ws)\s*(?:sh[o0]uld|b[e3])\s*(?:b[a4]nn[e3]d|kill[e3]d|d[e3]p[o0]rt[e3]d)/i, reason: "Antisemitic hate" },
   { pattern: /h[o0]l[o0]caust\s*(?:d[e3]ni[a4]l|h[o0][a4]x|l[i1]e|f[a4]k[e3]|m[a4]d[e3]_up|n[e3]v[e3]r\s*h[a4]pp[e3]n[e3]d)/i, reason: "Holocaust denial" },
   { pattern: /sh[o0][a4]h\s*(?:h[o0][a4]x|l[i1]e|f[a4]k[e3]|m[a4]d[e3]_up)/i, reason: "Holocaust denial" },
@@ -632,36 +618,14 @@ const TOXIC_PATTERNS = [
   { pattern: /bl[o0][o0]d\s*and\s*s[o0][i1]l/i, reason: "Nazi ideology" },
 
   // ── Dog whistles / coded language / microaggressions ──
-  { pattern: /y[o0]u\s*pe[o0]pl[e3]/i, reason: "Othering language" },
-  { pattern: /th[e3]s[e3]\s*pe[o0]pl[e3]/i, reason: "Othering language" },
-  { pattern: /th[o0]s[e3]\s*pe[o0]pl[e3]/i, reason: "Othering language" },
   { pattern: /cultur[a4]l\s*(?:enrichm[e3]nt|m[a4]rxism)/i, reason: "Dog whistle (extremist coded language)" },
   { pattern: /gr[o0][o0]ming\s*(?:agenda|childr[e3]n)/i, reason: "Anti-LGBTQ+ dog whistle" },
-  { pattern: /(?:s[o0]cial\s*just[i1]c[e3]\s*w[a4]rri[o0]r|sjw)/i, reason: "Pejorative political label" },
-  { pattern: /virtu[e3]\s*sign[a4]ll[i1]ng/i, reason: "Pejorative political label" },
-  { pattern: /(?:w[o0]k[e3]|w[o0]k[e3]ism)\s*(?:m[o0]b|agenda|g[o0]n[e3]\s*m[a4]d|cr[a4]zy|lun[a4]tic)/i, reason: "Pejorative political label" },
-  { pattern: /can[c5]el\s*cultur[e3]/i, reason: "Pejorative political label" },
-  { pattern: /pc\s*(?:g[o0]n[e3]\s*m[a4]d|g[o0]n[e3]\s*cr[a4]zy|cultur[e3])/i, reason: "Pejorative political label" },
-  { pattern: /p[o0]l[i1]t[i1]c[a4]l\s*c[o0]rr[e3]ctn[e3]ss\s*(?:g[o0]n[e3]|h[a4]s)/i, reason: "Pejorative political label" },
-  { pattern: /sn[o0]wfl[a4]k[e3]\s*(?:g[e3]n[e3]r[a4]t[i1][o0]n|mill[e3]nni[a4]ls?|generation)/i, reason: "Pejorative generational insult" },
-  { pattern: /sn[o0]wfl[a4]k[e3]/i, reason: "Pejorative insult" },
-  { pattern: /tr[i1]gg[e3]r[e3]d\s*(?:snowfl[a4]k[e3]|lib|pussy)?/i, reason: "Dismissive insult" },
-  { pattern: /s[a4]f[e3]\s*sp[a4]c[e3]\s*(?:g[o0]n[e3]|cr[a4]zy|stup[i1]d)/i, reason: "Dismissive insult" },
-  { pattern: /cuck(?:ed|old)?/i, reason: "Alt-right insult" },
-  { pattern: /s[o0]y\s*b[o0]y/i, reason: "Alt-right insult" },
   { pattern: /r[a4]c[e3]\s*r[e3][a4]l[i1]st/i, reason: "Scientific racism dog whistle" },
   { pattern: /r[a4]c[i1]al\s*r[e3][a4]l[i1]sm/i, reason: "Scientific racism dog whistle" },
-  { pattern: /(?:w[a4]ll\s*fund|build_th[e3]_wall|build_a_wall)/i, reason: "Anti-immigration rhetoric" },
-  { pattern: /(?:us\s*vs\s*them|us_vs_them|us_or_them)/i, reason: "Us vs them rhetoric" },
-  { pattern: /en[e3]my\s*[o0]f\s*th[e3]\s*pe[o0]pl[e3]/i, reason: "Dehumanizing political rhetoric" },
   { pattern: /sh[e3][a4]r[i1][a4]\s*l[a4]w/i, reason: "Islamophobic dog whistle" },
   { pattern: /islam[i1]z[a4]t[i1][o0]n/i, reason: "Islamophobic dog whistle" },
   { pattern: /eur[a4]b[i1][a4]/i, reason: "Islamophobic conspiracy" },
-  { pattern: /r[a4]c[i1]al\s*(?:pr[e3]f[e3]r[e3]nc[e3]|diff[e3]r[e3]nc[e3]s?|ist)/i, reason: "Racial discrimination rhetoric" },
   { pattern: /h[a4]t[e3]\s*cr[i1]m[e3]\s*(?:h[o0][a4]x|f[a4]k[e3]|m[a4]d[e3]_up)/i, reason: "Hate crime denial" },
-  { pattern: /(?:all\s*l[i1]v[e3]s_m[a4]tt[e3]r|all_lives_matter)/i, reason: "Race-related rhetoric" },
-  { pattern: /bl[u4][e3]\s*l[i1]v[e3]s_m[a4]tt[e3]r/i, reason: "Race-related rhetoric" },
-  { pattern: /d[i1]v[e3]rs[i1]ty\s*(?:h[i1]r[e3]|qu[o0]t[a4]|mand[a4]t[e3])/i, reason: "Anti-diversity rhetoric" },
   { pattern: /g[o0]\s*b[a4]ck\s*t[o0]\s*y[o0]ur\s*(?:c[o0]untry|h[o0]m[e3]|culture|pe[o0]pl[e3])/i, reason: "Xenophobic hate" },
 
   // ── Sexism / misogyny ──
@@ -684,10 +648,6 @@ const TOXIC_PATTERNS = [
 
   // ── Age discrimination / generational hate ──
   { pattern: /b[o0][o0]m[e3]r\s*(?:g[e3]n[o0]c[i1]d[e3]|kill_all|sh[o0]uld_d[i1]e)/i, reason: "Ageist hate" },
-
-  // ── Body shaming / appearance discrimination ──
-  { pattern: /f[a4]t\s*(?:sl[u4]t|wh[o0]r[e3]|b[i1]tch|pig)/i, reason: "Body shaming" },
-  { pattern: /(?:f[a4]t|lard|tubby|lard[a4]ss|pig)\s*(?:ar[e3]_disgusting|sh[o0]uld_d[i1]e)/i, reason: "Body shaming" },
 
   // ── Animal / dehumanizing comparisons ──
   { pattern: /(?:v[e3]rm[i1]n|p[a4]r[a4]s[i1]t[e3]|r[a4]ts?|pig|c[o0]ckr[o0][a4]ch[e3])\s*(?:pe[o0]pl[e3]|immigr[a4]nts?|r[e3]fug[e3]es?|min[o0]rit[i1]es?)/i, reason: "Dehumanizing language" },
@@ -775,27 +735,7 @@ const TOXIC_PATTERNS = [
   { pattern: /(?:go_r[o0]p[e3]|g[o0]_r[o0]p[e3])/i, reason: "Self-harm encouragement" },
   { pattern: /tr[i1]gg[e3]r_everything/i, reason: "Threatening language" },
 
-  // ── Additional misinformation / conspiracy ──
-  { pattern: /pl[a4]nd[e3]mic/i, reason: "Misinformation (COVID)" },
-  { pattern: /sc[a4]md[e3]mic/i, reason: "Misinformation (COVID)" },
-  { pattern: /c[o0]v[i1]d\s*(?:h[o0][a4]x|sc[a4]m|f[a4]k[e3])/i, reason: "Misinformation (COVID)" },
-  { pattern: /vacc[i1]n[e3]\s*(?:sh[e3]d|inj[u4]ry|m[i1]cr[o0]ch[i1]p)/i, reason: "Misinformation (vaccine)" },
-  { pattern: /5g\s*(?:c[a4]us[e3]s|c[a4]ncer|c[o0]r[o0]n[a4]|c[o0]vid)/i, reason: "Misinformation (5G)" },
-  { pattern: /ch[e3]mtr[a4][i1]ls/i, reason: "Misinformation (chemtrails)" },
-  { pattern: /fl[a4][a4]t_\w+th/i, reason: "Misinformation (flat earth)" },
-  { pattern: /m[o0][o0]n_l[a4]nd[i1]ng\s*h[o0][a4]x/i, reason: "Misinformation (moon landing)" },
-  { pattern: /[a4]dr[e3]n[o0]chr[o0]m[e3]/i, reason: "QAnon conspiracy" },
-  { pattern: /q[a4]n[o0]n(?:s)?/i, reason: "QAnon conspiracy" },
-  { pattern: /wwg1wga/i, reason: "QAnon slogan" },
-  { pattern: /th[e3]_st[o0]rm\s*(?:is_c[o0]ming|is_h[e3]r[e3])/i, reason: "QAnon conspiracy" },
-  { pattern: /c[a4]b[a4]l\s*(?:run|c[o0]ntr[o0]l|rul[e3])/i, reason: "Conspiracy propaganda" },
-  { pattern: /d[e3][e3]p_st[a4]t[e3]\s*(?:run|c[o0]ntr[o0]l|agenda|pupp[e3]t)/i, reason: "Conspiracy propaganda" },
-  { pattern: /f[e3]m[a4]_c[a4]mps/i, reason: "Conspiracy (FEMA camps)" },
-  { pattern: /m[a4]rt[i1][a4]l_l[a4]w\s*(?:immi?n[e3]nt|c[o0]ming|d[e3]cl[a4]r[e3]d)/i, reason: "Conspiracy propaganda" },
-  { pattern: /d[e3]p[o0]pul[a4]t[i1][o0]n\s*(?:agenda|plan|pr[o0]gr[a4]m)/i, reason: "Conspiracy propaganda" },
-  { pattern: /[a4]g[e3]nd[a4]21/i, reason: "Conspiracy propaganda" },
-  { pattern: /n[e3]w_w[o0]rld_[o0]rd[e3]r\s*(?:agenda|immi?n[e3]nt|is_c[o0]ming)/i, reason: "New World Order conspiracy" },
-  { pattern: /gr[e3][a4]t_r[e3]s[e3]t\s*(?:agenda|comi?ng|plan)/i, reason: "Conspiracy (Great Reset)" },
+
 
   // ── Additional ableist ──
   { pattern: /n[u4]mbnuts/i, reason: "Ableist slur" },
@@ -805,15 +745,6 @@ const TOXIC_PATTERNS = [
   { pattern: /r[a4][i1]nm[a4]n\s*(?:m[o0]m[e3]nt|j[o0]k[e3])/i, reason: "Ableist slur" },
   { pattern: /r[e3]t[a4]rd(?:ed)?\s*(?:l[i1]b|p[o0]lic[y5])/i, reason: "Ableist slur" },
   { pattern: /aut[i1]sm\s*(?:sp[e3]aks|aw[a4]r[e3]n[e3]ss)_m[o0]nth/i, reason: "Ableist discrimination" },
-
-  // ── Additional body shaming ──
-  { pattern: /l[a4]nd_wh[a4]l[e3]/i, reason: "Body shaming" },
-  { pattern: /h[a4]m_pl[a4]n[e3]t/i, reason: "Body shaming" },
-  { pattern: /f[a4]tty(?:\s*b[i1]tch|\s*sl[u4]t)?/i, reason: "Body shaming" },
-  { pattern: /r[e3]v[e3]rs[e3]_[a4]n[o0]r[e3]xi[a4]/i, reason: "Body shaming" },
-  { pattern: /sk[i1]nny\s*(?:b[i1]tch|sl[u4]t|wh[o0]r[e3])/i, reason: "Body shaming" },
-  { pattern: /an[o0]r[e3]xic(?:\s*sl[u4]t|\s*b[i1]tch)?/i, reason: "Body shaming" },
-  { pattern: /wh[a4]l[e3]\s*(?:b[i1]tch|sl[u4]t|ass)/i, reason: "Body shaming" },
 
   // ── Additional bullying / harassment ──
   { pattern: /n[o0]b[o0]dy_l[i1]k[e3]s_y[o0]u/i, reason: "Harassment" },
@@ -830,8 +761,9 @@ function flagToxicContent(chunks) {
   chunks.forEach((chunk) => {
     const text = chunk.text;
     for (const { pattern, reason } of TOXIC_PATTERNS) {
-      if (pattern.test(text)) {
-        flagged.push({ start: chunk.start, text: chunk.text, reason });
+      const match = text.match(pattern);
+      if (match) {
+        flagged.push({ start: chunk.start, text: chunk.text, reason, match: match[0].trim() });
         break;
       }
     }

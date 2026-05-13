@@ -141,13 +141,17 @@
 
           <div class="tab-panel" id="reportTab">
             <div class="section-heading">
-              <h2>Report</h2>
-              <button class="ghost-button compact" id="copyReportButton" type="button">
-                <i data-lucide="clipboard"></i>
-                Copy
+              <h2>Reports</h2>
+              <label style="font-size:13px;display:flex;align-items:center;gap:4px;">
+                Count:
+                <input type="number" id="reportCount" value="5" min="1" max="50" style="width:50px;text-align:center;border:1px solid var(--line);background:var(--surface);padding:4px 6px;">
+              </label>
+              <button class="ghost-button compact" id="generateReportsBtn" type="button">
+                <i data-lucide="file-text"></i>
+                Generate Reports
               </button>
             </div>
-            <textarea id="reportOutput" class="report-output" readonly></textarea>
+            <div id="ytBlocksContainer"></div>
           </div>
 
           <div class="tab-panel" id="transcriptTab">
